@@ -1,0 +1,7 @@
+<resources>
+    <string name="app_name">Lottery</string>
+    <color name="yellowFromTheEgg">#e6c90e</color>
+
+    <string name="wed">Mittwoch</string>
+    <string name="sat">Samstag</string>
+</resources>
