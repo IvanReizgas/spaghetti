@@ -2,9 +2,16 @@
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:layout_marginTop="20dp"
+    android:layout_marginTop="1dp"
     android:background="@color/yellowFromTheEgg"
     android:orientation="vertical">
+
+    <ImageView
+        android:id="@+id/image1"
+        android:layout_width="match_parent"
+        android:layout_height="140dp"
+        android:scaleType="centerCrop"
+        android:src="@drawable/bc_lotto" />
 
     <LinearLayout
         android:layout_width="match_parent"
@@ -22,11 +29,9 @@
             android:id="@+id/switcher"
             android:layout_width="154dp"
             android:layout_height="wrap_content"
-            android:layout_centerInParent="true"
-            android:layout_marginLeft="5dp"
             android:layout_marginEnd="8dp"
             android:layout_marginRight="8dp"
-            android:layout_marginBottom="16dp"
+            android:layout_marginBottom="5dp"
             android:fontFamily="sans-serif-condensed"
             android:showText="true"
             android:switchTextAppearance="@style/SwitchTextAppearance"
@@ -38,14 +43,15 @@
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="50dp"
-        android:layout_marginTop="20dp"
+        android:layout_marginTop="5dp"
         android:background="@color/yellowFromTheEgg"
         android:orientation="vertical">
 
         <SeekBar
             android:id="@+id/seekBar"
             android:layout_width="match_parent"
-            android:layout_height="30dp" />
+            android:layout_height="30dp"
+            android:thumbTint="@color/black_overlay" />
 
         <LinearLayout
             android:layout_width="match_parent"
@@ -62,7 +68,9 @@
                 android:id="@+id/barNumber"
                 android:layout_width="30dp"
                 android:layout_height="15dp"
-                android:text="TextView" />
+                android:fontFamily="sans-serif-medium"
+                android:text="TextView"
+                android:textStyle="bold" />
         </LinearLayout>
 
     </LinearLayout>
@@ -70,51 +78,62 @@
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:layout_marginTop="2dp"
+        android:layout_marginTop="5dp"
         android:background="@color/yellowFromTheEgg"
-        android:orientation="horizontal">
+        android:orientation="vertical">
 
-        <NumberPicker
-            android:id="@+id/np1"
-            android:layout_width="10dp"
-            android:layout_height="wrap_content"
-            android:layout_weight="1" />
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_marginTop="2dp"
+            android:background="@color/yellowFromTheEgg"
+            android:layout_weight="1"
+            android:orientation="horizontal">
 
-        <NumberPicker
-            android:id="@+id/np2"
-            android:layout_width="10dp"
-            android:layout_height="wrap_content"
-            android:layout_weight="1" />
+            <NumberPicker
+                android:id="@+id/np1"
+                android:layout_width="10dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1" />
 
-        <NumberPicker
-            android:id="@+id/np3"
-            android:layout_width="10dp"
-            android:layout_height="wrap_content"
-            android:layout_weight="1" />
+            <NumberPicker
+                android:id="@+id/np2"
+                android:layout_width="10dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1" />
 
-        <NumberPicker
-            android:id="@+id/np4"
-            android:layout_width="10dp"
-            android:layout_height="wrap_content"
-            android:layout_weight="1" />
+            <NumberPicker
+                android:id="@+id/np3"
+                android:layout_width="10dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1" />
 
-        <NumberPicker
-            android:id="@+id/np5"
-            android:layout_width="10dp"
-            android:layout_height="wrap_content"
-            android:layout_weight="1" />
+            <NumberPicker
+                android:id="@+id/np4"
+                android:layout_width="10dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1" />
 
-        <NumberPicker
-            android:id="@+id/np6"
-            android:layout_width="10dp"
-            android:layout_height="wrap_content"
-            android:layout_weight="1" />
+            <NumberPicker
+                android:id="@+id/np5"
+                android:layout_width="10dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1" />
+
+            <NumberPicker
+                android:id="@+id/np6"
+                android:layout_width="10dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1" />
+        </LinearLayout>
+
+        <ImageButton
+            android:id="@+id/button1"
+            android:layout_width="150dp"
+            android:layout_height="150dp"
+            android:layout_gravity="center"
+            android:background="@drawable/ball1"
+            android:layout_weight="0" />
+
     </LinearLayout>
-
-    <TextView
-        android:id="@+id/textView"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_weight="1"
-        android:text="TextView" />
 </LinearLayout>

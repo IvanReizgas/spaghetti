@@ -5,37 +5,45 @@ import androidx.appcompat.app.AppCompatActivity;
 import android.os.Build;
 import android.os.Bundle;
 import android.view.View;
+import android.view.animation.Animation;
+import android.view.animation.AnimationUtils;
+import android.widget.Button;
+import android.widget.ImageButton;
+import android.widget.ImageView;
 import android.widget.NumberPicker;
 import android.widget.SeekBar;
 import android.widget.Switch;
 import android.widget.TextSwitcher;
 import android.widget.TextView;
 
+import com.google.android.gms.ads.AdSize;
+import com.google.android.gms.ads.doubleclick.PublisherAdView;
+
 /**
  * An example full-screen activity that shows and hides the system UI (i.e.
  * status bar and navigation/system bar) with user interaction.
  */
 public class FullscreenActivity extends AppCompatActivity {
-    /**
-     * Whether or not the system UI should be auto-hidden after
-     * {@link #AUTO_HIDE_DELAY_MILLIS} milliseconds.
-     */
-    private static final boolean AUTO_HIDE = true;
+  /**
+   * Whether or not the system UI should be auto-hidden after
+   * {@link #AUTO_HIDE_DELAY_MILLIS} milliseconds.
+   */
+  private static final boolean AUTO_HIDE = true;
 
-    /**
-     * If {@link #AUTO_HIDE} is set, the number of milliseconds to wait after
-     * user interaction before hiding the system UI.
-     */
-    private static final int AUTO_HIDE_DELAY_MILLIS = 3000;
+  /**
+   * If {@link #AUTO_HIDE} is set, the number of milliseconds to wait after
+   * user interaction before hiding the system UI.
+   */
+  private static final int AUTO_HIDE_DELAY_MILLIS = 3000;
 
-    /**
-     * Some older devices needs a small delay between UI widget updates
-     * and a change of the status and navigation bar.
-     */
-    private static final int UI_ANIMATION_DELAY = 300;
-//    private final Handler mHideHandler = new Handler();
-    private View mContentView;
-//    private final Runnable mHidePart2Runnable = new Runnable() {
+  /**
+   * Some older devices needs a small delay between UI widget updates
+   * and a change of the status and navigation bar.
+   */
+  private static final int UI_ANIMATION_DELAY = 300;
+  //    private final Handler mHideHandler = new Handler();
+  private View mContentView;
+  //    private final Runnable mHidePart2Runnable = new Runnable() {
 //        @SuppressLint("InlinedApi")
 //        @Override
 //        public void run() {
@@ -52,7 +60,7 @@ public class FullscreenActivity extends AppCompatActivity {
 //                    | View.SYSTEM_UI_FLAG_HIDE_NAVIGATION);
 //        }
 //    };
-    private View mControlsView;
+  private View mControlsView;
 //    private final Runnable mShowPart2Runnable = new Runnable() {
 //        @Override
 //        public void run() {
@@ -71,11 +79,12 @@ public class FullscreenActivity extends AppCompatActivity {
 //            hide();
 //        }
 //    };
-    /**
-     * Touch listener to use for in-layout UI controls to delay hiding the
-     * system UI. This is to prevent the jarring behavior of controls going away
-     * while interacting with activity UI.
-     */
+
+  /**
+   * Touch listener to use for in-layout UI controls to delay hiding the
+   * system UI. This is to prevent the jarring behavior of controls going away
+   * while interacting with activity UI.
+   */
 //    private final View.OnTouchListener mDelayHideTouchListener = new View.OnTouchListener() {
 //        @Override
 //        public boolean onTouch(View view, MotionEvent motionEvent) {
@@ -85,58 +94,74 @@ public class FullscreenActivity extends AppCompatActivity {
 //            return false;
 //        }
 //    };
+  @Override
+  protected void onCreate(Bundle savedInstanceState) {
+    super.onCreate(savedInstanceState);
 
-    @Override
-    protected void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
+    setContentView(R.layout.activity_fullscreen);
 
-        setContentView(R.layout.activity_fullscreen);
+    PublisherAdView adView = new PublisherAdView(this);
+    adView.setAdSizes(AdSize.BANNER);
+    adView.setAdUnitId("/6499/example/banner");
+    //getActionBar().setCustomView(adView);
 
-        Switch switcher = (Switch) findViewById(R.id.switcher);
-        switcher.setTextColor(getResources().getColor(R.color.yellowFromTheEgg, null));
-        switcher.setTextOff(getResources().getString(R.string.wed));
-        switcher.setTextOn(getResources().getString(R.string.sat));
+    ImageView image1 = (ImageView) findViewById(R.id.image1);
+    //image1.setImageResource(R.drawable.bc_lotto);
 
-        SeekBar seekBar = (SeekBar) findViewById(R.id.seekBar);
-        seekBar.setMax(9);
-        seekBar.incrementProgressBy(1);
-        seekBar.setProgress(0);
+    Switch switcher = (Switch) findViewById(R.id.switcher);
+    switcher.setTextColor(getResources().getColor(R.color.yellowFromTheEgg, null));
+    switcher.setTextOff(getResources().getString(R.string.wed));
+    switcher.setTextOn(getResources().getString(R.string.sat));
 
-        final TextView barNumber = (TextView) findViewById(R.id.barNumber);
-        barNumber.setText(String.valueOf(seekBar.getProgress()+1));
+    SeekBar seekBar = (SeekBar) findViewById(R.id.seekBar);
+    seekBar.setMax(9);
+    seekBar.incrementProgressBy(1);
+    seekBar.setProgress(0);
 
-        seekBar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener(){
+    final TextView barNumber = (TextView) findViewById(R.id.barNumber);
+    barNumber.setText(String.valueOf(seekBar.getProgress() + 1));
 
-                                               @Override
-                                               public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
-                                                   barNumber.setText(String.valueOf(progress+1));
-                                               }
+    seekBar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
+      @Override
+      public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
+        barNumber.setText(String.valueOf(progress + 1));
+      }
 
-                                               @Override
-                                               public void onStartTrackingTouch(SeekBar seekBar) {
-                                               }
-                                               @Override
-                                               public void onStopTrackingTouch(SeekBar seekBar) {
-                                               }
-                                           });
+      @Override
+      public void onStartTrackingTouch(SeekBar seekBar) {
+      }
 
-
-
-        createPicker(R.id.np1);
-        createPicker(R.id.np2);
-        createPicker(R.id.np3);
-        createPicker(R.id.np4);
-        createPicker(R.id.np5);
-        createPicker(R.id.np6);
+      @Override
+      public void onStopTrackingTouch(SeekBar seekBar) {
+      }
+    });
 
 
+    createPicker(R.id.np1);
+    createPicker(R.id.np2);
+    createPicker(R.id.np3);
+    createPicker(R.id.np4);
+    createPicker(R.id.np5);
+    createPicker(R.id.np6);
+
+
+    final Animation myAnim = AnimationUtils.loadAnimation(this, R.anim.shake);
+    ImageButton myButton = (ImageButton) findViewById(R.id.button1);
+    myButton.setAnimation(myAnim);
+
+    myButton.setOnClickListener(new View.OnClickListener() {
+      @Override
+      public void onClick(View v) {
+        v.startAnimation(myAnim);
+      }
+    });
 
 //        mVisible = true;
 //        mControlsView = findViewById(R.id.fullscreen_content_controls);
 //        mContentView = findViewById(R.id.fullscreen_content);
 
 
-        // Set up the user interaction to manually show or hide the system UI.
+    // Set up the user interaction to manually show or hide the system UI.
 //        mContentView.setOnClickListener(new View.OnClickListener() {
 //            @Override
 //            public void onClick(View view) {
@@ -144,35 +169,35 @@ public class FullscreenActivity extends AppCompatActivity {
 //            }
 //        });
 
-        // Upon interacting with UI controls, delay any scheduled hide()
-        // operations to prevent the jarring behavior of controls going away
-        // while interacting with the UI.
+    // Upon interacting with UI controls, delay any scheduled hide()
+    // operations to prevent the jarring behavior of controls going away
+    // while interacting with the UI.
 //        findViewById(R.id.dummy_button).setOnTouchListener(mDelayHideTouchListener);
-    }
+  }
 
-    private void createPicker(int id) {
-        NumberPicker np = (NumberPicker) findViewById(id);
-        np.setMinValue(0);
-        np.setMaxValue(49);
-        np.setWrapSelectorWheel(true);
-        np.setOnValueChangedListener(new NumberPicker.OnValueChangeListener() {
-            @Override
-            public void onValueChange(NumberPicker picker, int oldVal, int newVal){
-                //Display the newly selected number from picker
+  private void createPicker(int id) {
+    NumberPicker np = (NumberPicker) findViewById(id);
+    np.setMinValue(0);
+    np.setMaxValue(49);
+    np.setWrapSelectorWheel(true);
+    np.setOnValueChangedListener(new NumberPicker.OnValueChangeListener() {
+      @Override
+      public void onValueChange(NumberPicker picker, int oldVal, int newVal) {
+        //Display the newly selected number from picker
 //                tv.setText("Selected Number : " + newVal);
-            }
-        });
-    }
+      }
+    });
+  }
 
-    @Override
-    protected void onPostCreate(Bundle savedInstanceState) {
-        super.onPostCreate(savedInstanceState);
+  @Override
+  protected void onPostCreate(Bundle savedInstanceState) {
+    super.onPostCreate(savedInstanceState);
 
-        // Trigger the initial hide() shortly after the activity has been
-        // created, to briefly hint to the user that UI controls
-        // are available.
+    // Trigger the initial hide() shortly after the activity has been
+    // created, to briefly hint to the user that UI controls
+    // are available.
 //        delayedHide(100);
-    }
+  }
 //
 //    private void toggle() {
 //        if (mVisible) {
