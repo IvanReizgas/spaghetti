@@ -2,11 +2,14 @@ package com.kruegerapps.lottery;
 
 import androidx.appcompat.app.AppCompatActivity;
 
+import android.os.Build;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.NumberPicker;
+import android.widget.SeekBar;
 import android.widget.Switch;
 import android.widget.TextSwitcher;
+import android.widget.TextView;
 
 /**
  * An example full-screen activity that shows and hides the system UI (i.e.
@@ -93,6 +96,31 @@ public class FullscreenActivity extends AppCompatActivity {
         switcher.setTextColor(getResources().getColor(R.color.yellowFromTheEgg, null));
         switcher.setTextOff(getResources().getString(R.string.wed));
         switcher.setTextOn(getResources().getString(R.string.sat));
+
+        SeekBar seekBar = (SeekBar) findViewById(R.id.seekBar);
+        seekBar.setMax(9);
+        seekBar.incrementProgressBy(1);
+        seekBar.setProgress(0);
+
+        final TextView barNumber = (TextView) findViewById(R.id.barNumber);
+        barNumber.setText(String.valueOf(seekBar.getProgress()+1));
+
+        seekBar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener(){
+
+                                               @Override
+                                               public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
+                                                   barNumber.setText(String.valueOf(progress+1));
+                                               }
+
+                                               @Override
+                                               public void onStartTrackingTouch(SeekBar seekBar) {
+                                               }
+                                               @Override
+                                               public void onStopTrackingTouch(SeekBar seekBar) {
+                                               }
+                                           });
+
+
 
         createPicker(R.id.np1);
         createPicker(R.id.np2);

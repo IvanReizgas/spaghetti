@@ -1,6 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout
-    xmlns:android="http://schemas.android.com/apk/res/android"
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:layout_marginTop="20dp"
@@ -24,6 +23,7 @@
             android:layout_width="154dp"
             android:layout_height="wrap_content"
             android:layout_centerInParent="true"
+            android:layout_marginLeft="5dp"
             android:layout_marginEnd="8dp"
             android:layout_marginRight="8dp"
             android:layout_marginBottom="16dp"
@@ -37,41 +37,78 @@
 
     <LinearLayout
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
+        android:layout_height="50dp"
         android:layout_marginTop="20dp"
+        android:background="@color/yellowFromTheEgg"
+        android:orientation="vertical">
+
+        <SeekBar
+            android:id="@+id/seekBar"
+            android:layout_width="match_parent"
+            android:layout_height="30dp" />
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:background="@color/yellowFromTheEgg"
+            android:orientation="horizontal">
+
+            <View
+                android:layout_width="10dp"
+                android:layout_height="0dp"
+                android:layout_weight="0" />
+
+            <TextView
+                android:id="@+id/barNumber"
+                android:layout_width="30dp"
+                android:layout_height="15dp"
+                android:text="TextView" />
+        </LinearLayout>
+
+    </LinearLayout>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_marginTop="2dp"
         android:background="@color/yellowFromTheEgg"
         android:orientation="horizontal">
 
-    <NumberPicker
-        android:id="@+id/np1"
-        android:layout_width="10dp"
-        android:layout_height="wrap_content"
-        android:layout_weight="1"/>
-    <NumberPicker
-        android:id="@+id/np2"
-        android:layout_width="10dp"
-        android:layout_height="wrap_content"
-        android:layout_weight="1"/>
-    <NumberPicker
-        android:id="@+id/np3"
-        android:layout_width="10dp"
-        android:layout_height="wrap_content"
-        android:layout_weight="1"/>
-    <NumberPicker
-        android:id="@+id/np4"
-        android:layout_width="10dp"
-        android:layout_height="wrap_content"
-        android:layout_weight="1"/>
-    <NumberPicker
-        android:id="@+id/np5"
-        android:layout_width="10dp"
-        android:layout_height="wrap_content"
-        android:layout_weight="1"/>
-    <NumberPicker
-        android:id="@+id/np6"
-        android:layout_width="10dp"
-        android:layout_height="wrap_content"
-        android:layout_weight="1"/>
+        <NumberPicker
+            android:id="@+id/np1"
+            android:layout_width="10dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1" />
+
+        <NumberPicker
+            android:id="@+id/np2"
+            android:layout_width="10dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1" />
+
+        <NumberPicker
+            android:id="@+id/np3"
+            android:layout_width="10dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1" />
+
+        <NumberPicker
+            android:id="@+id/np4"
+            android:layout_width="10dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1" />
+
+        <NumberPicker
+            android:id="@+id/np5"
+            android:layout_width="10dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1" />
+
+        <NumberPicker
+            android:id="@+id/np6"
+            android:layout_width="10dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1" />
     </LinearLayout>
 
     <TextView
