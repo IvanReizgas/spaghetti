@@ -16,8 +16,13 @@ import android.widget.Switch;
 import android.widget.TextSwitcher;
 import android.widget.TextView;
 
+import com.google.android.gms.ads.AdRequest;
 import com.google.android.gms.ads.AdSize;
+import com.google.android.gms.ads.AdView;
+import com.google.android.gms.ads.MobileAds;
 import com.google.android.gms.ads.doubleclick.PublisherAdView;
+import com.google.android.gms.ads.initialization.InitializationStatus;
+import com.google.android.gms.ads.initialization.OnInitializationCompleteListener;
 
 /**
  * An example full-screen activity that shows and hides the system UI (i.e.
@@ -100,10 +105,24 @@ public class FullscreenActivity extends AppCompatActivity {
 
     setContentView(R.layout.activity_fullscreen);
 
-    PublisherAdView adView = new PublisherAdView(this);
-    adView.setAdSizes(AdSize.BANNER);
-    adView.setAdUnitId("/6499/example/banner");
-    //getActionBar().setCustomView(adView);
+    MobileAds.initialize(this, new OnInitializationCompleteListener() {
+      @Override
+      public void onInitializationComplete(InitializationStatus initializationStatus) {
+      }
+    });
+
+    AdView mAdView = findViewById(R.id.adView);
+    AdRequest adRequest = new AdRequest.Builder().build();
+    mAdView.loadAd(adRequest);
+
+    getSupportActionBar().setDisplayShowCustomEnabled(true);
+    TextView view = new TextView(this);
+    getSupportActionBar().setCustomView(view);
+    view.setText("asdsadsa");
+
+
+
+
 
     ImageView image1 = (ImageView) findViewById(R.id.image1);
     //image1.setImageResource(R.drawable.bc_lotto);

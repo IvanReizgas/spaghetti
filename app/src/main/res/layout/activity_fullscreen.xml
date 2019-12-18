@@ -6,6 +6,19 @@
     android:background="@color/yellowFromTheEgg"
     android:orientation="vertical">
 
+
+    <com.google.android.gms.ads.AdView
+        xmlns:ads="http://schemas.android.com/apk/res-auto"
+        android:id="@+id/adView"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_centerHorizontal="true"
+        android:layout_alignParentBottom="true"
+        ads:adSize="BANNER"
+        ads:adUnitId="ca-app-pub-3940256099942544/6300978111">
+    </com.google.android.gms.ads.AdView>
+
+
     <ImageView
         android:id="@+id/image1"
         android:layout_width="match_parent"
@@ -15,8 +28,8 @@
 
     <LinearLayout
         android:layout_width="match_parent"
-        android:layout_height="50dp"
-        android:layout_marginTop="20dp"
+        android:layout_height="30dp"
+        android:layout_marginTop="15dp"
         android:background="@color/yellowFromTheEgg"
         android:orientation="horizontal">
 
@@ -29,9 +42,6 @@
             android:id="@+id/switcher"
             android:layout_width="154dp"
             android:layout_height="wrap_content"
-            android:layout_marginEnd="8dp"
-            android:layout_marginRight="8dp"
-            android:layout_marginBottom="5dp"
             android:fontFamily="sans-serif-condensed"
             android:showText="true"
             android:switchTextAppearance="@style/SwitchTextAppearance"
