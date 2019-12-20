@@ -164,17 +164,15 @@ public class FullscreenActivity extends AppCompatActivity {
       @Override
       public void onClick(View v) {
         v.startAnimation(myAnim);
-
+        // compare lucky numbers
         new URLTask().execute();
-
-        System.out.println("XXXXXXXXXXXXXXXXXXXXXXXXX");
       }
     });
   }
 
   private void setupSwitcher() {
     Switch switcher = (Switch) findViewById(R.id.switcher);
-    switcher.setTextColor(getResources().getColor(R.color.yellowFromTheEgg, null));
+    switcher.setTextColor(getResources().getColor(R.color.yellow, null));
     switcher.setTextOff(getResources().getString(R.string.wed));
     switcher.setTextOn(getResources().getString(R.string.sat));
   }
@@ -307,30 +305,7 @@ public class FullscreenActivity extends AppCompatActivity {
 
       URL urlObject = null;
       try {
-//          RequestQueue queue = Volley.newRequestQueue(this);
-//          String url ="http://www.google.com";
-//
-//// Request a string response from the provided URL.
-//          StringRequest stringRequest = new StringRequest(Request.Method.GET, url,
-//                  new Response.Listener<String>() {
-//                    @Override
-//                    public void onResponse(String response) {
-//                      // Display the first 500 characters of the response string.
-//                      textView.setText("Response is: "+ response.substring(0,500));
-//                    }
-//                  }, new Response.ErrorListener() {
-//            @Override
-//            public void onErrorResponse(VolleyError error) {
-//              textView.setText("That didn't work!");
-//            }
-//          });
-//
-//// Add the request to the RequestQueue.
-//          queue.add(stringRequest);
-
-
-
-        urlObject = new URL("https://www.lotto.de/lotto-6aus49");
+        urlObject = new URL(getResources().getString(R.string.lottery_url));
         URLConnection urlConnection = urlObject.openConnection();
 
         try (BufferedReader buffer = new BufferedReader(new InputStreamReader(urlConnection.getInputStream()))) {

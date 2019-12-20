@@ -3,7 +3,7 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:layout_marginTop="1dp"
-    android:background="@color/yellowFromTheEgg"
+    android:background="@color/yellow"
     android:orientation="vertical">
 
     <ImageView
@@ -17,7 +17,7 @@
         android:layout_width="match_parent"
         android:layout_height="30dp"
         android:layout_marginTop="15dp"
-        android:background="@color/yellowFromTheEgg"
+        android:background="@color/yellow"
         android:orientation="horizontal">
 
         <View
@@ -41,7 +41,7 @@
         android:layout_width="match_parent"
         android:layout_height="50dp"
         android:layout_marginTop="5dp"
-        android:background="@color/yellowFromTheEgg"
+        android:background="@color/yellow"
         android:orientation="vertical">
 
         <SeekBar
@@ -53,7 +53,7 @@
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            android:background="@color/yellowFromTheEgg"
+            android:background="@color/yellow"
             android:orientation="horizontal">
 
             <View
@@ -76,14 +76,14 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:layout_marginTop="5dp"
-        android:background="@color/yellowFromTheEgg"
+        android:background="@color/yellow"
         android:orientation="vertical">
 
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:layout_marginTop="2dp"
-            android:background="@color/yellowFromTheEgg"
+            android:background="@color/yellow"
             android:layout_weight="1"
             android:orientation="horizontal">
 
