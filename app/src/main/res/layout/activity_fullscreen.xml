@@ -35,6 +35,55 @@
             android:thumb="@drawable/custom_thumb"
             android:track="@drawable/custom_track" />
 
+        <TextView
+            android:id="@+id/number1"
+            android:gravity="center"
+            android:layout_marginLeft="10dp"
+            android:background="@drawable/circle"
+            android:layout_width="30dp"
+            android:layout_height="30dp"
+            android:textStyle="bold" />
+        <TextView
+            android:id="@+id/number2"
+            android:gravity="center"
+            android:layout_marginLeft="10dp"
+            android:background="@drawable/circle"
+            android:layout_width="30dp"
+            android:layout_height="30dp"
+            android:textStyle="bold" />
+        <TextView
+            android:id="@+id/number3"
+            android:gravity="center"
+            android:layout_marginLeft="10dp"
+            android:background="@drawable/circle"
+            android:layout_width="30dp"
+            android:layout_height="30dp"
+            android:textStyle="bold" />
+        <TextView
+            android:id="@+id/number4"
+            android:gravity="center"
+            android:layout_marginLeft="10dp"
+            android:background="@drawable/circle"
+            android:layout_width="30dp"
+            android:layout_height="30dp"
+            android:textStyle="bold" />
+        <TextView
+            android:id="@+id/number5"
+            android:gravity="center"
+            android:layout_marginLeft="10dp"
+            android:background="@drawable/circle"
+            android:layout_width="30dp"
+            android:layout_height="30dp"
+            android:textStyle="bold" />
+        <TextView
+            android:id="@+id/number6"
+            android:gravity="center"
+            android:layout_marginLeft="10dp"
+            android:background="@drawable/circle"
+            android:layout_width="30dp"
+            android:layout_height="30dp"
+            android:textStyle="bold" />
+
     </LinearLayout>
 
     <LinearLayout

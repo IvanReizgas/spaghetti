@@ -22,6 +22,8 @@ import com.google.android.gms.ads.MobileAds;
 import com.google.android.gms.ads.initialization.InitializationStatus;
 import com.google.android.gms.ads.initialization.OnInitializationCompleteListener;
 
+import org.w3c.dom.Text;
+
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
@@ -38,27 +40,27 @@ import java.util.stream.Stream;
  * An example full-screen activity that shows and hides the system UI (i.e.
  * status bar and navigation/system bar) with user interaction.
  */
-public class FullscreenActivity extends AppCompatActivity {
-  /**
-   * Whether or not the system UI should be auto-hidden after
-   * {@link #AUTO_HIDE_DELAY_MILLIS} milliseconds.
-   */
-  private static final boolean AUTO_HIDE = true;
+public class FullscreenActivity extends AppCompatActivity implements AsyncResponse {
+    /**
+     * Whether or not the system UI should be auto-hidden after
+     * {@link #AUTO_HIDE_DELAY_MILLIS} milliseconds.
+     */
+    private static final boolean AUTO_HIDE = true;
 
-  /**
-   * If {@link #AUTO_HIDE} is set, the number of milliseconds to wait after
-   * user interaction before hiding the system UI.
-   */
-  private static final int AUTO_HIDE_DELAY_MILLIS = 3000;
+    /**
+     * If {@link #AUTO_HIDE} is set, the number of milliseconds to wait after
+     * user interaction before hiding the system UI.
+     */
+    private static final int AUTO_HIDE_DELAY_MILLIS = 3000;
 
-  /**
-   * Some older devices needs a small delay between UI widget updates
-   * and a change of the status and navigation bar.
-   */
-  private static final int UI_ANIMATION_DELAY = 300;
-  //    private final Handler mHideHandler = new Handler();
-  private View mContentView;
-  //    private final Runnable mHidePart2Runnable = new Runnable() {
+    /**
+     * Some older devices needs a small delay between UI widget updates
+     * and a change of the status and navigation bar.
+     */
+    private static final int UI_ANIMATION_DELAY = 300;
+    //    private final Handler mHideHandler = new Handler();
+    private View mContentView;
+    //    private final Runnable mHidePart2Runnable = new Runnable() {
 //        @SuppressLint("InlinedApi")
 //        @Override
 //        public void run() {
@@ -75,11 +77,11 @@ public class FullscreenActivity extends AppCompatActivity {
 //                    | View.SYSTEM_UI_FLAG_HIDE_NAVIGATION);
 //        }
 //    };
-  private View mControlsView;
+    private View mControlsView;
 
-  private List<String> numbers = Collections.emptyList();
-  private NumberPicker[] numberPickers = new NumberPicker[6];
-  List<Integer> winNumbers = new ArrayList<>();
+    private List<String> numbers = Collections.emptyList();
+    private NumberPicker[] numberPickers = new NumberPicker[6];
+    private static List<Integer> winNumbers = new ArrayList<>();
 
 //    private final Runnable mShowPart2Runnable = new Runnable() {
 //        @Override
@@ -100,11 +102,11 @@ public class FullscreenActivity extends AppCompatActivity {
 //        }
 //    };
 
-  /**
-   * Touch listener to use for in-layout UI controls to delay hiding the
-   * system UI. This is to prevent the jarring behavior of controls going away
-   * while interacting with activity UI.
-   */
+    /**
+     * Touch listener to use for in-layout UI controls to delay hiding the
+     * system UI. This is to prevent the jarring behavior of controls going away
+     * while interacting with activity UI.
+     */
 //    private final View.OnTouchListener mDelayHideTouchListener = new View.OnTouchListener() {
 //        @Override
 //        public boolean onTouch(View view, MotionEvent motionEvent) {
@@ -114,128 +116,139 @@ public class FullscreenActivity extends AppCompatActivity {
 //            return false;
 //        }
 //    };
-  @Override
-  protected void onCreate(Bundle savedInstanceState) {
-    super.onCreate(savedInstanceState);
-    setContentView(R.layout.activity_fullscreen);
-    // setup advertise
-    MobileAds.initialize(this, new OnInitializationCompleteListener() {
-      @Override
-      public void onInitializationComplete(InitializationStatus initializationStatus) {
-      }
-    });
-    getSupportActionBar().setDisplayShowCustomEnabled(true);
-    getSupportActionBar().setCustomView(getAdView());
-    // switch between drawing days
-    setupSwitcher();
-    // switch between different sets
-    setupSeekBar();
-    // set wheels with lucky numbers
-    numberPickers[0] = createPicker(R.id.np1);
-    numberPickers[1] = createPicker(R.id.np2);
-    numberPickers[2] = createPicker(R.id.np3);
-    numberPickers[3] = createPicker(R.id.np4);
-    numberPickers[4] = createPicker(R.id.np5);
-    numberPickers[5] = createPicker(R.id.np6);
-    // set action & jiggling of button if pressed
-    setupButton();
+    @Override
+    protected void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        setContentView(R.layout.activity_fullscreen);
+        // setup advertise
+        MobileAds.initialize(this, new OnInitializationCompleteListener() {
+            @Override
+            public void onInitializationComplete(InitializationStatus initializationStatus) {
+            }
+        });
+        getSupportActionBar().setDisplayShowCustomEnabled(true);
+        getSupportActionBar().setCustomView(getAdView());
+        // switch between drawing days
+        setupSwitcher();
+        // switch between different sets
+        setupSeekBar();
+        // set wheels with lucky numbers
+        numberPickers[0] = createPicker(R.id.np1);
+        numberPickers[1] = createPicker(R.id.np2);
+        numberPickers[2] = createPicker(R.id.np3);
+        numberPickers[3] = createPicker(R.id.np4);
+        numberPickers[4] = createPicker(R.id.np5);
+        numberPickers[5] = createPicker(R.id.np6);
+        // set action & jiggling of button if pressed
+        setupButton();
 
 //        mVisible = true;
 //        mControlsView = findViewById(R.id.fullscreen_content_controls);
 //        mContentView = findViewById(R.id.fullscreen_content);
-    // Set up the user interaction to manually show or hide the system UI.
+        // Set up the user interaction to manually show or hide the system UI.
 //        mContentView.setOnClickListener(new View.OnClickListener() {
 //            @Override
 //            public void onClick(View view) {
 //                toggle();
 //            }
 //        });
-    // Upon interacting with UI controls, delay any scheduled hide()
-    // operations to prevent the jarring behavior of controls going away
-    // while interacting with the UI.
+        // Upon interacting with UI controls, delay any scheduled hide()
+        // operations to prevent the jarring behavior of controls going away
+        // while interacting with the UI.
 //        findViewById(R.id.dummy_button).setOnTouchListener(mDelayHideTouchListener);
-  }
+    }
 
-  private void setupButton() {
-    final Animation myAnim = AnimationUtils.loadAnimation(this, R.anim.shake);
-    ImageButton myButton = (ImageButton) findViewById(R.id.button1);
-    myButton.setAnimation(myAnim);
-    myButton.setOnClickListener(new View.OnClickListener() {
-      @Override
-      public void onClick(View v) {
-        v.startAnimation(myAnim);
-        // compare lucky numbers
-        new URLTask().execute();
-      }
-    });
-  }
+    private void setupButton() {
+        final Animation myAnim = AnimationUtils.loadAnimation(this, R.anim.shake);
+        ImageButton myButton = (ImageButton) findViewById(R.id.button1);
+        myButton.setAnimation(myAnim);
+        FullscreenActivity fullscreenActivity = this;
+        myButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                v.startAnimation(myAnim);
+                // compare lucky numbers
+                new URLTask(fullscreenActivity).execute();
+            }
+        });
+    }
 
-  private void setupSwitcher() {
-    Switch switcher = (Switch) findViewById(R.id.switcher);
-    switcher.setTextColor(getResources().getColor(R.color.yellow, null));
-    switcher.setTextOff(getResources().getString(R.string.wed));
-    switcher.setTextOn(getResources().getString(R.string.sat));
-  }
+    private void setupSwitcher() {
+        Switch switcher = (Switch) findViewById(R.id.switcher);
+        switcher.setTextColor(getResources().getColor(R.color.yellow, null));
+        switcher.setTextOff(getResources().getString(R.string.wed));
+        switcher.setTextOn(getResources().getString(R.string.sat));
+    }
 
-  private void setupSeekBar() {
-    SeekBar seekBar = (SeekBar) findViewById(R.id.seekBar);
-    seekBar.setMax(9);
-    seekBar.incrementProgressBy(1);
-    seekBar.setProgress(0);
+    private void setupSeekBar() {
+        SeekBar seekBar = (SeekBar) findViewById(R.id.seekBar);
+        seekBar.setMax(9);
+        seekBar.incrementProgressBy(1);
+        seekBar.setProgress(0);
 
-    final TextView barNumber = (TextView) findViewById(R.id.barNumber);
-    barNumber.setText(String.valueOf(seekBar.getProgress() + 1));
+        final TextView barNumber = (TextView) findViewById(R.id.barNumber);
+        barNumber.setText(String.valueOf(seekBar.getProgress() + 1));
 
-    seekBar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
-      @Override
-      public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
-        barNumber.setText(String.valueOf(progress + 1));
-      }
+        seekBar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
+            @Override
+            public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
+                barNumber.setText(String.valueOf(progress + 1));
+            }
 
-      @Override
-      public void onStartTrackingTouch(SeekBar seekBar) {
-      }
+            @Override
+            public void onStartTrackingTouch(SeekBar seekBar) {
+            }
 
-      @Override
-      public void onStopTrackingTouch(SeekBar seekBar) {
-      }
-    });
-  }
+            @Override
+            public void onStopTrackingTouch(SeekBar seekBar) {
+            }
+        });
+    }
 
-  private AdView getAdView() {
-    AdView mAdView = new AdView(this);
-    mAdView.setAdSize(AdSize.SMART_BANNER);
-    mAdView.setAdUnitId("ca-app-pub-3940256099942544/6300978111");
-    AdRequest adRequest = new AdRequest.Builder().build();
-    mAdView.loadAd(adRequest);
-    return mAdView;
-  }
+    private AdView getAdView() {
+        AdView mAdView = new AdView(this);
+        mAdView.setAdSize(AdSize.SMART_BANNER);
+        mAdView.setAdUnitId("ca-app-pub-3940256099942544/6300978111");
+        AdRequest adRequest = new AdRequest.Builder().build();
+        mAdView.loadAd(adRequest);
+        return mAdView;
+    }
 
-  private NumberPicker createPicker(int id) {
-    NumberPicker np = (NumberPicker) findViewById(id);
-    np.setMinValue(0);
-    np.setMaxValue(49);
-    np.setWrapSelectorWheel(true);
-    np.setOnValueChangedListener(new NumberPicker.OnValueChangeListener() {
-      @Override
-      public void onValueChange(NumberPicker picker, int oldVal, int newVal) {
-        //Display the newly selected number from picker
+    private NumberPicker createPicker(int id) {
+        NumberPicker np = (NumberPicker) findViewById(id);
+        np.setMinValue(0);
+        np.setMaxValue(49);
+        np.setWrapSelectorWheel(true);
+        np.setOnValueChangedListener(new NumberPicker.OnValueChangeListener() {
+            @Override
+            public void onValueChange(NumberPicker picker, int oldVal, int newVal) {
+                //Display the newly selected number from picker
 //                tv.setText("Selected Number : " + newVal);
-      }
-    });
+            }
+        });
 
-    return np;
-  }
+        return np;
+    }
 
-  @Override
-  protected void onPostCreate(Bundle savedInstanceState) {
-    super.onPostCreate(savedInstanceState);
+    @Override
+    protected void onPostCreate(Bundle savedInstanceState) {
+        super.onPostCreate(savedInstanceState);
 
-    // Trigger the initial hide() shortly after the activity has been
-    // created, to briefly hint to the user that UI controls
-    // are available.
+        // Trigger the initial hide() shortly after the activity has been
+        // created, to briefly hint to the user that UI controls
+        // are available.
 //        delayedHide(100);
-  }
+    }
+
+    @Override
+    public void processFinish() {
+        ((TextView) findViewById(R.id.number1)).setText(String.valueOf(winNumbers.get(0)));
+        ((TextView) findViewById(R.id.number2)).setText(String.valueOf(winNumbers.get(1)));
+        ((TextView) findViewById(R.id.number3)).setText(String.valueOf(winNumbers.get(2)));
+        ((TextView) findViewById(R.id.number4)).setText(String.valueOf(winNumbers.get(3)));
+        ((TextView) findViewById(R.id.number5)).setText(String.valueOf(winNumbers.get(4)));
+        ((TextView) findViewById(R.id.number6)).setText(String.valueOf(winNumbers.get(5)));
+    }
 //
 //    private void toggle() {
 //        if (mVisible) {
@@ -280,59 +293,63 @@ public class FullscreenActivity extends AppCompatActivity {
 //        mHideHandler.postDelayed(mHideRunnable, delayMillis);
 //    }
 
-  class URLTask extends AsyncTask<Void, Void, Void> {
+    private class URLTask extends AsyncTask<Void, Void, Void> {
 
-    int hits = 0;
+        public AsyncResponse delegate = null;
+        private int hits = 0;
 
-    protected void onPreExecute() {
-      //display progress dialog.
-
-    }
-
-    @Override
-    protected void onPostExecute(Void aVoid) {
-      super.onPostExecute(aVoid);
-
-
-      Context context = getApplicationContext();
-      int duration = Toast.LENGTH_SHORT;
-      Toast toast = Toast.makeText(context, String.format("Sie haben %s richtige Zahlen", hits), duration);
-      toast.show();
-    }
-
-    @Override
-    protected Void doInBackground(Void... voids) {
-
-      URL urlObject = null;
-      try {
-        urlObject = new URL(getResources().getString(R.string.lottery_url));
-        URLConnection urlConnection = urlObject.openConnection();
-
-        try (BufferedReader buffer = new BufferedReader(new InputStreamReader(urlConnection.getInputStream()))) {
-          winNumbers.clear();
-
-          numbers = buffer.lines().map(str -> {
-            int ind = str.indexOf("18.12.2019");
-            return ind > -1 ? str.substring(ind, str.length()) : null;
-          }).filter(Objects::nonNull).map(str -> Stream.of(str.split("LottoBall__circle\\\">")).map(s -> s.substring(0, s.indexOf("<"))).collect(Collectors.toList())).flatMap(List::stream).collect(Collectors.toList());
-          for (int i = 0; i < numbers.size(); i++) {
-            if (i > 0 && i < 7) {
-              Integer number = Integer.valueOf(numbers.get(i));
-              if (Stream.of(numberPickers).map(NumberPicker::getValue).filter(number::equals).findFirst().isPresent()) {
-                hits++;
-              }
-              winNumbers.add(number);
-            }
-          }
+        public URLTask(FullscreenActivity fullscreenActivity) {
+            this.delegate = fullscreenActivity;
         }
-      } catch (IOException e) {
-        e.printStackTrace();
-      }
 
+        protected void onPreExecute() {
+            //display progress dialog.
 
-      return null;
+        }
+
+        @Override
+        protected void onPostExecute(Void aVoid) {
+            super.onPostExecute(aVoid);
+
+            delegate.processFinish();
+
+            Context context = getApplicationContext();
+            int duration = Toast.LENGTH_SHORT;
+            Toast toast = Toast.makeText(context, String.format("Sie haben %s richtige Zahlen", hits), duration);
+            toast.show();
+        }
+
+        @Override
+        protected Void doInBackground(Void... voids) {
+
+            URL urlObject = null;
+            try {
+                urlObject = new URL(getResources().getString(R.string.lottery_url));
+                URLConnection urlConnection = urlObject.openConnection();
+
+                try (BufferedReader buffer = new BufferedReader(new InputStreamReader(urlConnection.getInputStream()))) {
+                    winNumbers.clear();
+
+                    numbers = buffer.lines().map(str -> {
+                        int ind = str.indexOf("18.12.2019");
+                        return ind > -1 ? str.substring(ind, str.length()) : null;
+                    }).filter(Objects::nonNull).map(str -> Stream.of(str.split("LottoBall__circle\\\">")).map(s -> s.substring(0, s.indexOf("<"))).collect(Collectors.toList())).flatMap(List::stream).collect(Collectors.toList());
+                    for (int i = 0; i < numbers.size(); i++) {
+                        if (i > 0 && i < 7) {
+                            Integer number = Integer.valueOf(numbers.get(i));
+                            if (Stream.of(numberPickers).map(NumberPicker::getValue).filter(number::equals).findFirst().isPresent()) {
+                                hits++;
+                            }
+                            winNumbers.add(number);
+                        }
+                    }
+                }
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+
+            return null;
+        }
     }
-
-  }
 
 }
