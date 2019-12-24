@@ -1,13 +1,21 @@
 package com.kruegerapps.lottery;
 
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.content.ContextCompat;
+import androidx.dynamicanimation.animation.DynamicAnimation;
+import androidx.dynamicanimation.animation.SpringAnimation;
+import androidx.dynamicanimation.animation.SpringForce;
 
 import android.content.Context;
+import android.content.SharedPreferences;
+import android.graphics.Color;
 import android.os.AsyncTask;
+import android.os.Build;
 import android.os.Bundle;
 import android.view.View;
 import android.view.animation.Animation;
 import android.view.animation.AnimationUtils;
+import android.widget.CompoundButton;
 import android.widget.ImageButton;
 import android.widget.NumberPicker;
 import android.widget.SeekBar;
@@ -22,17 +30,23 @@ import com.google.android.gms.ads.MobileAds;
 import com.google.android.gms.ads.initialization.InitializationStatus;
 import com.google.android.gms.ads.initialization.OnInitializationCompleteListener;
 
-import org.w3c.dom.Text;
-
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.URL;
 import java.net.URLConnection;
+import java.time.DayOfWeek;
+import java.time.LocalDate;
+import java.time.temporal.TemporalAdjusters;
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
+import java.util.Optional;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -41,26 +55,26 @@ import java.util.stream.Stream;
  * status bar and navigation/system bar) with user interaction.
  */
 public class FullscreenActivity extends AppCompatActivity implements AsyncResponse {
-    /**
-     * Whether or not the system UI should be auto-hidden after
-     * {@link #AUTO_HIDE_DELAY_MILLIS} milliseconds.
-     */
-    private static final boolean AUTO_HIDE = true;
+  /**
+   * Whether or not the system UI should be auto-hidden after
+   * {@link #AUTO_HIDE_DELAY_MILLIS} milliseconds.
+   */
+  private static final boolean AUTO_HIDE = true;
 
-    /**
-     * If {@link #AUTO_HIDE} is set, the number of milliseconds to wait after
-     * user interaction before hiding the system UI.
-     */
-    private static final int AUTO_HIDE_DELAY_MILLIS = 3000;
+  /**
+   * If {@link #AUTO_HIDE} is set, the number of milliseconds to wait after
+   * user interaction before hiding the system UI.
+   */
+  private static final int AUTO_HIDE_DELAY_MILLIS = 3000;
 
-    /**
-     * Some older devices needs a small delay between UI widget updates
-     * and a change of the status and navigation bar.
-     */
-    private static final int UI_ANIMATION_DELAY = 300;
-    //    private final Handler mHideHandler = new Handler();
-    private View mContentView;
-    //    private final Runnable mHidePart2Runnable = new Runnable() {
+  /**
+   * Some older devices needs a small delay between UI widget updates
+   * and a change of the status and navigation bar.
+   */
+  private static final int UI_ANIMATION_DELAY = 300;
+  //    private final Handler mHideHandler = new Handler();
+  private View mContentView;
+  //    private final Runnable mHidePart2Runnable = new Runnable() {
 //        @SuppressLint("InlinedApi")
 //        @Override
 //        public void run() {
@@ -77,11 +91,13 @@ public class FullscreenActivity extends AppCompatActivity implements AsyncRespon
 //                    | View.SYSTEM_UI_FLAG_HIDE_NAVIGATION);
 //        }
 //    };
-    private View mControlsView;
+  private View mControlsView;
 
-    private List<String> numbers = Collections.emptyList();
-    private NumberPicker[] numberPickers = new NumberPicker[6];
-    private static List<Integer> winNumbers = new ArrayList<>();
+  private NumberPicker[] numberPickers = new NumberPicker[6];
+  private List<Integer> winNumbers = new ArrayList<>();
+  private boolean checked = false;
+  private String drawingDay;
+  private Map<Integer, NumberPicker> map = new HashMap<>();
 
 //    private final Runnable mShowPart2Runnable = new Runnable() {
 //        @Override
@@ -102,11 +118,11 @@ public class FullscreenActivity extends AppCompatActivity implements AsyncRespon
 //        }
 //    };
 
-    /**
-     * Touch listener to use for in-layout UI controls to delay hiding the
-     * system UI. This is to prevent the jarring behavior of controls going away
-     * while interacting with activity UI.
-     */
+  /**
+   * Touch listener to use for in-layout UI controls to delay hiding the
+   * system UI. This is to prevent the jarring behavior of controls going away
+   * while interacting with activity UI.
+   */
 //    private final View.OnTouchListener mDelayHideTouchListener = new View.OnTouchListener() {
 //        @Override
 //        public boolean onTouch(View view, MotionEvent motionEvent) {
@@ -116,139 +132,242 @@ public class FullscreenActivity extends AppCompatActivity implements AsyncRespon
 //            return false;
 //        }
 //    };
-    @Override
-    protected void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_fullscreen);
-        // setup advertise
-        MobileAds.initialize(this, new OnInitializationCompleteListener() {
-            @Override
-            public void onInitializationComplete(InitializationStatus initializationStatus) {
-            }
-        });
-        getSupportActionBar().setDisplayShowCustomEnabled(true);
-        getSupportActionBar().setCustomView(getAdView());
-        // switch between drawing days
-        setupSwitcher();
-        // switch between different sets
-        setupSeekBar();
-        // set wheels with lucky numbers
-        numberPickers[0] = createPicker(R.id.np1);
-        numberPickers[1] = createPicker(R.id.np2);
-        numberPickers[2] = createPicker(R.id.np3);
-        numberPickers[3] = createPicker(R.id.np4);
-        numberPickers[4] = createPicker(R.id.np5);
-        numberPickers[5] = createPicker(R.id.np6);
-        // set action & jiggling of button if pressed
-        setupButton();
+  @Override
+  protected void onCreate(Bundle savedInstanceState) {
+    super.onCreate(savedInstanceState);
+    setContentView(R.layout.activity_fullscreen);
+    // setup advertise
+    setupAdvertise();
+    // switch between drawing days
+    setupSwitcher();
+    // switch between different sets
+    setupSeekBar();
+    // set wheels with lucky numbers
+    setupPickers();
+    // set action & jiggling of button if pressed
+    setupButton();
+    // execute initially
+    new URLTask(this, checked).execute();
 
 //        mVisible = true;
 //        mControlsView = findViewById(R.id.fullscreen_content_controls);
 //        mContentView = findViewById(R.id.fullscreen_content);
-        // Set up the user interaction to manually show or hide the system UI.
+    // Set up the user interaction to manually show or hide the system UI.
 //        mContentView.setOnClickListener(new View.OnClickListener() {
 //            @Override
 //            public void onClick(View view) {
 //                toggle();
 //            }
 //        });
-        // Upon interacting with UI controls, delay any scheduled hide()
-        // operations to prevent the jarring behavior of controls going away
-        // while interacting with the UI.
+    // Upon interacting with UI controls, delay any scheduled hide()
+    // operations to prevent the jarring behavior of controls going away
+    // while interacting with the UI.
 //        findViewById(R.id.dummy_button).setOnTouchListener(mDelayHideTouchListener);
+  }
+
+  private void setupPickers() {
+    numberPickers[0] = createPicker(R.id.np1, 1);
+    numberPickers[1] = createPicker(R.id.np2, 2);
+    numberPickers[2] = createPicker(R.id.np3, 3);
+    numberPickers[3] = createPicker(R.id.np4, 4);
+    numberPickers[4] = createPicker(R.id.np5, 5);
+    numberPickers[5] = createPicker(R.id.np6, 6);
+  }
+
+  private void setupAdvertise() {
+    MobileAds.initialize(this, new OnInitializationCompleteListener() {
+      @Override
+      public void onInitializationComplete(InitializationStatus initializationStatus) {
+      }
+    });
+    getSupportActionBar().setDisplayShowCustomEnabled(true);
+    getSupportActionBar().setCustomView(getAdView());
+  }
+
+  private AdView getAdView() {
+    AdView mAdView = new AdView(this);
+    mAdView.setAdSize(AdSize.SMART_BANNER);
+    mAdView.setAdUnitId("ca-app-pub-3940256099942544/6300978111");
+    AdRequest adRequest = new AdRequest.Builder().build();
+    mAdView.loadAd(adRequest);
+    return mAdView;
+  }
+
+  private void setupButton() {
+    final Animation myAnim = AnimationUtils.loadAnimation(this, R.anim.shake);
+    ImageButton myButton = (ImageButton) findViewById(R.id.button1);
+    myButton.setAnimation(myAnim);
+    FullscreenActivity fullscreenActivity = this;
+    myButton.setOnClickListener(new View.OnClickListener() {
+      @Override
+      public void onClick(View v) {
+        v.startAnimation(myAnim);
+        // compare lucky numbers
+        new URLTask(fullscreenActivity, checked).execute();
+      }
+    });
+  }
+
+  private void setupSwitcher() {
+    Switch switcher = (Switch) findViewById(R.id.switcher);
+    final FullscreenActivity fullscreenActivity = this;
+    switcher.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+      @Override
+      public void onCheckedChanged(CompoundButton compoundButton, boolean b) {
+        checked = b;
+        map.values().stream().forEach(picker -> picker.setBackgroundColor(getResources().getColor(R.color.yellow, null)));
+        new URLTask(fullscreenActivity, checked).execute();
+      }
+    });
+    switcher.setTextColor(getResources().getColor(R.color.yellow, null));
+    switcher.setTextOff(getResources().getString(R.string.wed));
+    switcher.setTextOn(getResources().getString(R.string.sat));
+  }
+
+  private void setupSeekBar() {
+    SeekBar seekBar = (SeekBar) findViewById(R.id.seekBar);
+    seekBar.setMax(9);
+    seekBar.incrementProgressBy(1);
+    seekBar.setProgress(0);
+
+    final TextView barNumber = (TextView) findViewById(R.id.barNumber);
+    barNumber.setText(String.valueOf(seekBar.getProgress() + 1));
+
+    seekBar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
+      @Override
+      public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
+        //System.out.println("YYYYY");
+        barNumber.setText(String.valueOf(progress + 1));
+        AtomicInteger i = new AtomicInteger(0);
+        Stream.of(numberPickers)
+              .forEach(np -> {
+                i.incrementAndGet();
+                int val = getPreferences(Context.MODE_PRIVATE).getInt(getString(R.string.pref_key) + barNumber.getText() + i.get(), i.get());
+                np.setValue(val);
+              });
+
+        int color = getResources().getColor(R.color.yellow, null);
+        Stream.of(numberPickers)
+           .forEach(np -> {
+             //((TextView) findViewById(getBallId((Integer) entry.getValue().getTag()))).setBackground(ContextCompat.getDrawable(getApplicationContext(), R.drawable.circle));
+             np.setBackgroundColor(color);
+           });
+      }
+
+      @Override
+      public void onStartTrackingTouch(SeekBar seekBar) {
+      }
+
+      @Override
+      public void onStopTrackingTouch(SeekBar seekBar) {
+      }
+    });
+  }
+
+  private NumberPicker createPicker(int id, int number) {
+    NumberPicker np = (NumberPicker) findViewById(id);
+    np.setTag(number);
+    np.setMinValue(1);
+    np.setMaxValue(49);
+    np.setWrapSelectorWheel(true);
+    CharSequence block = ((TextView) findViewById(R.id.barNumber)).getText();
+    if (block != null) {
+      int val = getPreferences(Context.MODE_PRIVATE).getInt(getString(R.string.pref_key) + block + number, number);
+      np.setValue(val);
     }
 
-    private void setupButton() {
-        final Animation myAnim = AnimationUtils.loadAnimation(this, R.anim.shake);
-        ImageButton myButton = (ImageButton) findViewById(R.id.button1);
-        myButton.setAnimation(myAnim);
-        FullscreenActivity fullscreenActivity = this;
-        myButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                v.startAnimation(myAnim);
-                // compare lucky numbers
-                new URLTask(fullscreenActivity).execute();
-            }
-        });
-    }
+    np.setOnValueChangedListener(new NumberPicker.OnValueChangeListener() {
+      @Override
+      public void onValueChange(NumberPicker picker, int oldVal, int newVal) {
+        CharSequence block = ((TextView) findViewById(R.id.barNumber)).getText();
+        if (block != null) {
+          SharedPreferences.Editor editor = getPreferences(Context.MODE_PRIVATE).edit();
+          int tag = (int) picker.getTag();
+          editor.putInt(getString(R.string.pref_key) + block + tag, newVal);
+          editor.commit();
 
-    private void setupSwitcher() {
-        Switch switcher = (Switch) findViewById(R.id.switcher);
-        switcher.setTextColor(getResources().getColor(R.color.yellow, null));
-        switcher.setTextOff(getResources().getString(R.string.wed));
-        switcher.setTextOn(getResources().getString(R.string.sat));
-    }
+          //if (map.containsValue(picker)) {
+            picker.setBackgroundColor(getResources().getColor(R.color.yellow, null));
+          //}
+          //    if (string.isEmpty()) {
+          //    int i=0;
+          //  String numbers = StringUtils.EMPTY;
+          //for (NumberPicker numberPicker : numberPickers) {
+          //if (i == (int)picker.getTag()){
+          // numbers +=
+          //}
+          //}
+          //String numbers = Stream.of(numberPickers[Integer.valueOf(block.toString())])
+//                                   .map(NumberPicker::getValue)
+          //                                 .map(String::valueOf)
+          //                               .collect(Collectors.joining(","));
+        }
+      }
+    });
 
-    private void setupSeekBar() {
-        SeekBar seekBar = (SeekBar) findViewById(R.id.seekBar);
-        seekBar.setMax(9);
-        seekBar.incrementProgressBy(1);
-        seekBar.setProgress(0);
+    return np;
+  }
 
-        final TextView barNumber = (TextView) findViewById(R.id.barNumber);
-        barNumber.setText(String.valueOf(seekBar.getProgress() + 1));
+  private int getBallId(int tag) {
+    return tag == 1 ? R.id.number1 : tag == 2 ? R.id.number2 : tag == 3 ? R.id.number3 : tag == 4 ? R.id.number4 : tag == 5 ? R.id.number5 : R.id.number6;
+  }
 
-        seekBar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
-            @Override
-            public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
-                barNumber.setText(String.valueOf(progress + 1));
-            }
+  @Override
+  protected void onPostCreate(Bundle savedInstanceState) {
+    super.onPostCreate(savedInstanceState);
 
-            @Override
-            public void onStartTrackingTouch(SeekBar seekBar) {
-            }
-
-            @Override
-            public void onStopTrackingTouch(SeekBar seekBar) {
-            }
-        });
-    }
-
-    private AdView getAdView() {
-        AdView mAdView = new AdView(this);
-        mAdView.setAdSize(AdSize.SMART_BANNER);
-        mAdView.setAdUnitId("ca-app-pub-3940256099942544/6300978111");
-        AdRequest adRequest = new AdRequest.Builder().build();
-        mAdView.loadAd(adRequest);
-        return mAdView;
-    }
-
-    private NumberPicker createPicker(int id) {
-        NumberPicker np = (NumberPicker) findViewById(id);
-        np.setMinValue(0);
-        np.setMaxValue(49);
-        np.setWrapSelectorWheel(true);
-        np.setOnValueChangedListener(new NumberPicker.OnValueChangeListener() {
-            @Override
-            public void onValueChange(NumberPicker picker, int oldVal, int newVal) {
-                //Display the newly selected number from picker
-//                tv.setText("Selected Number : " + newVal);
-            }
-        });
-
-        return np;
-    }
-
-    @Override
-    protected void onPostCreate(Bundle savedInstanceState) {
-        super.onPostCreate(savedInstanceState);
-
-        // Trigger the initial hide() shortly after the activity has been
-        // created, to briefly hint to the user that UI controls
-        // are available.
+    // Trigger the initial hide() shortly after the activity has been
+    // created, to briefly hint to the user that UI controls
+    // are available.
 //        delayedHide(100);
-    }
+  }
 
-    @Override
-    public void processFinish() {
-        ((TextView) findViewById(R.id.number1)).setText(String.valueOf(winNumbers.get(0)));
-        ((TextView) findViewById(R.id.number2)).setText(String.valueOf(winNumbers.get(1)));
-        ((TextView) findViewById(R.id.number3)).setText(String.valueOf(winNumbers.get(2)));
-        ((TextView) findViewById(R.id.number4)).setText(String.valueOf(winNumbers.get(3)));
-        ((TextView) findViewById(R.id.number5)).setText(String.valueOf(winNumbers.get(4)));
-        ((TextView) findViewById(R.id.number6)).setText(String.valueOf(winNumbers.get(5)));
+  @Override
+  public void processFinish() {
+    if (!winNumbers.isEmpty()) {
+      setBallAndPicker((TextView) findViewById(R.id.number1), winNumbers.get(0));
+      setBallAndPicker((TextView) findViewById(R.id.number2), winNumbers.get(1));
+      setBallAndPicker((TextView) findViewById(R.id.number3), winNumbers.get(2));
+      setBallAndPicker((TextView) findViewById(R.id.number4), winNumbers.get(3));
+      setBallAndPicker((TextView) findViewById(R.id.number5), winNumbers.get(4));
+      setBallAndPicker((TextView) findViewById(R.id.number6), winNumbers.get(5));
     }
+    ((TextView) findViewById(R.id.drawingDay)).setText(String.format("Ziehung vom %s", drawingDay));
+
+    //winNumbers.stream().map(map::get).filter(Objects::nonNull);
+    // winNumbers.forEach(num -> {
+    //   NumberPicker numberPicker = map.get(num);
+    //  if (numberPicker != null) {
+    //    ((TextView) findViewById(R.id.number1)).setBackgroundColor(Color.GREEN);
+    //  }
+    // });
+  }
+
+  private void setBallAndPicker(TextView ball, Integer num) {
+    setView(ball, String.valueOf(num));
+    setBallAndPickerColor(ball, num);
+  }
+
+  private void setBallAndPickerColor(TextView ball, Integer num) {
+    NumberPicker numberPicker = map.get(num);
+    if (numberPicker != null) {
+      //ball.getBackground()
+      //    .setTint(Color.GREEN);
+      numberPicker.setBackgroundColor(Color.GREEN);
+    }
+  }
+
+  private void setView(TextView tv, String value) {
+    SpringAnimation anim = new SpringAnimation(tv, DynamicAnimation.ROTATION_Y, 0);
+    anim.setStartValue(-35);
+    anim.setStartVelocity(2000);
+    anim.getSpring()
+        .setDampingRatio(SpringForce.DAMPING_RATIO_HIGH_BOUNCY);
+    anim.getSpring()
+        .setStiffness(SpringForce.STIFFNESS_LOW);
+    anim.start();
+    tv.setText(value);
+  }
 //
 //    private void toggle() {
 //        if (mVisible) {
@@ -293,63 +412,104 @@ public class FullscreenActivity extends AppCompatActivity implements AsyncRespon
 //        mHideHandler.postDelayed(mHideRunnable, delayMillis);
 //    }
 
-    private class URLTask extends AsyncTask<Void, Void, Void> {
+  private class URLTask extends AsyncTask<Void, Void, Void> {
 
-        public AsyncResponse delegate = null;
-        private int hits = 0;
+    protected AsyncResponse delegate = null;
+    private boolean checked;
+    private int hits = 0;
 
-        public URLTask(FullscreenActivity fullscreenActivity) {
-            this.delegate = fullscreenActivity;
-        }
+    public URLTask(FullscreenActivity fullscreenActivity, boolean checked) {
+      this.delegate = fullscreenActivity;
+      this.checked = checked;
+    }
 
-        protected void onPreExecute() {
-            //display progress dialog.
+    protected void onPreExecute() {
+      map.clear();
+      winNumbers.clear();
+    }
 
-        }
+    @Override
+    protected void onPostExecute(Void aVoid) {
+      super.onPostExecute(aVoid);
 
-        @Override
-        protected void onPostExecute(Void aVoid) {
-            super.onPostExecute(aVoid);
+      delegate.processFinish();
 
-            delegate.processFinish();
+      Context context = getApplicationContext();
+      int duration = Toast.LENGTH_SHORT;
+      Toast toast = Toast.makeText(context, String.format("Sie haben %s richtige Zahlen", hits), duration);
+      toast.show();
+    }
 
-            Context context = getApplicationContext();
-            int duration = Toast.LENGTH_SHORT;
-            Toast toast = Toast.makeText(context, String.format("Sie haben %s richtige Zahlen", hits), duration);
-            toast.show();
-        }
+    @Override
+    protected Void doInBackground(Void... voids) {
 
-        @Override
-        protected Void doInBackground(Void... voids) {
+      URL urlObject = null;
+      try {
+        urlObject = new URL(getResources().getString(R.string.lottery_url));
+        URLConnection urlConnection = urlObject.openConnection();
 
-            URL urlObject = null;
-            try {
-                urlObject = new URL(getResources().getString(R.string.lottery_url));
-                URLConnection urlConnection = urlObject.openConnection();
-
-                try (BufferedReader buffer = new BufferedReader(new InputStreamReader(urlConnection.getInputStream()))) {
-                    winNumbers.clear();
-
-                    numbers = buffer.lines().map(str -> {
-                        int ind = str.indexOf("18.12.2019");
-                        return ind > -1 ? str.substring(ind, str.length()) : null;
-                    }).filter(Objects::nonNull).map(str -> Stream.of(str.split("LottoBall__circle\\\">")).map(s -> s.substring(0, s.indexOf("<"))).collect(Collectors.toList())).flatMap(List::stream).collect(Collectors.toList());
-                    for (int i = 0; i < numbers.size(); i++) {
-                        if (i > 0 && i < 7) {
-                            Integer number = Integer.valueOf(numbers.get(i));
-                            if (Stream.of(numberPickers).map(NumberPicker::getValue).filter(number::equals).findFirst().isPresent()) {
-                                hits++;
-                            }
-                            winNumbers.add(number);
-                        }
-                    }
-                }
-            } catch (IOException e) {
-                e.printStackTrace();
+        try (BufferedReader buffer = new BufferedReader(new InputStreamReader(urlConnection.getInputStream()))) {
+          List<String> numbers = Collections.emptyList();
+          if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            LocalDate now = LocalDate.now();
+            if (now.getDayOfWeek()
+                   .equals(DayOfWeek.SATURDAY) || now.getDayOfWeek()
+                                                     .equals(DayOfWeek.SATURDAY)) {
+              numbers = getNumbers(buffer, now.getDayOfMonth(), now.getMonthValue(), now.getYear());
             }
 
-            return null;
+            if (numbers.isEmpty()) {
+              // not yet drawn today or not drawing day
+              LocalDate then = now.with(TemporalAdjusters.previous(checked ? DayOfWeek.SATURDAY : DayOfWeek.WEDNESDAY));
+              numbers = getNumbers(buffer, then.getDayOfMonth(), then.getMonthValue(), then.getYear());
+            }
+          } else {
+            Calendar cal = Calendar.getInstance();
+            if (cal.get(Calendar.DAY_OF_WEEK) == Calendar.SATURDAY || cal.get(Calendar.DAY_OF_WEEK) == Calendar.WEDNESDAY) {
+              numbers = getNumbers(buffer, cal.get(Calendar.DAY_OF_MONTH), cal.get(Calendar.MONTH) + 1, cal.get(Calendar.YEAR));
+            }
+
+            if (numbers.isEmpty()) {
+              cal.add(Calendar.DAY_OF_WEEK, -(cal.get(Calendar.DAY_OF_WEEK)) - (checked ? 0 : 3));
+              numbers = getNumbers(buffer, cal.get(Calendar.DAY_OF_MONTH), cal.get(Calendar.MONTH) + 1, cal.get(Calendar.YEAR));
+            }
+          }
+
+          for (int i = 0; i < numbers.size(); i++) {
+            if (i > 0 && i < 7) {
+              Integer number = Integer.valueOf(numbers.get(i));
+              Optional<NumberPicker> first = Stream.of(numberPickers)
+                                                   .filter(np -> number.intValue() == np.getValue())
+                                                   .findFirst();
+              if (first.isPresent()) {
+                hits++;
+                map.put(number, first.get());
+              }
+              winNumbers.add(number);
+            }
+          }
         }
+      } catch (IOException e) {
+        e.printStackTrace();
+      }
+
+      return null;
     }
+
+    private List<String> getNumbers(BufferedReader buffer, int dayOfMonth, int monthValue, int year) {
+      drawingDay = String.format("%s.%s.%s", dayOfMonth, monthValue, year);
+      return buffer.lines()
+                   .map(str -> {
+                     int ind = str.indexOf(drawingDay);
+                     return ind > -1 ? str.substring(ind, str.length()) : null;
+                   })
+                   .filter(Objects::nonNull)
+                   .map(str -> Stream.of(str.split("LottoBall__circle\\\">"))
+                                     .map(s -> s.substring(0, s.indexOf("<")))
+                                     .collect(Collectors.toList()))
+                   .flatMap(List::stream)
+                   .collect(Collectors.toList());
+    }
+  }
 
 }

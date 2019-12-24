@@ -21,7 +21,7 @@
 
     <style name="SwitchTextAppearance">
         <item name="android:textColor">@color/yellow</item>
-        <item name="android:textSize">15sp</item>
+        <item name="android:textSize">12sp</item>
     </style>
 
 </resources>
