@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name">Lottery</string>
+    <string name="app_name">Der Lottozahlen-Checker</string>
     <color name="yellow">#e6c90e</color>
     <string name="pref_key">lottery_picker</string>
     <string name="wed">Mittwoch</string>
