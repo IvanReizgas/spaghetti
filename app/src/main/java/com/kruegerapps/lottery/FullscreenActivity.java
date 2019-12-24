@@ -1,7 +1,6 @@
 package com.kruegerapps.lottery;
 
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.core.content.ContextCompat;
 import androidx.dynamicanimation.animation.DynamicAnimation;
 import androidx.dynamicanimation.animation.SpringAnimation;
 import androidx.dynamicanimation.animation.SpringForce;
@@ -29,6 +28,8 @@ import com.google.android.gms.ads.AdView;
 import com.google.android.gms.ads.MobileAds;
 import com.google.android.gms.ads.initialization.InitializationStatus;
 import com.google.android.gms.ads.initialization.OnInitializationCompleteListener;
+
+import org.apache.commons.lang3.StringUtils;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -93,11 +94,11 @@ public class FullscreenActivity extends AppCompatActivity implements AsyncRespon
 //    };
   private View mControlsView;
 
-  private NumberPicker[] numberPickers = new NumberPicker[6];
-  private List<Integer> winNumbers = new ArrayList<>();
+  private final NumberPicker[] numberPickers = new NumberPicker[6];
+  private final List<Integer> winNumbers = new ArrayList<>();
   private boolean checked = false;
   private String drawingDay;
-  private Map<Integer, NumberPicker> map = new HashMap<>();
+  private final Map<Integer, NumberPicker> map = new HashMap<>();
 
 //    private final Runnable mShowPart2Runnable = new Runnable() {
 //        @Override
@@ -175,11 +176,7 @@ public class FullscreenActivity extends AppCompatActivity implements AsyncRespon
   }
 
   private void setupAdvertise() {
-    MobileAds.initialize(this, new OnInitializationCompleteListener() {
-      @Override
-      public void onInitializationComplete(InitializationStatus initializationStatus) {
-      }
-    });
+    MobileAds.initialize(this, initializationStatus -> {});
     getSupportActionBar().setDisplayShowCustomEnabled(true);
     getSupportActionBar().setCustomView(getAdView());
   }
@@ -195,29 +192,24 @@ public class FullscreenActivity extends AppCompatActivity implements AsyncRespon
 
   private void setupButton() {
     final Animation myAnim = AnimationUtils.loadAnimation(this, R.anim.shake);
-    ImageButton myButton = (ImageButton) findViewById(R.id.button1);
+    ImageButton myButton = findViewById(R.id.button1);
     myButton.setAnimation(myAnim);
     FullscreenActivity fullscreenActivity = this;
-    myButton.setOnClickListener(new View.OnClickListener() {
-      @Override
-      public void onClick(View v) {
-        v.startAnimation(myAnim);
-        // compare lucky numbers
-        new URLTask(fullscreenActivity, checked).execute();
-      }
+    myButton.setOnClickListener(v -> {
+      v.startAnimation(myAnim);
+      // compare lucky numbers
+      new URLTask(fullscreenActivity, checked).execute();
     });
   }
 
   private void setupSwitcher() {
-    Switch switcher = (Switch) findViewById(R.id.switcher);
+    Switch switcher = findViewById(R.id.switcher);
     final FullscreenActivity fullscreenActivity = this;
-    switcher.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
-      @Override
-      public void onCheckedChanged(CompoundButton compoundButton, boolean b) {
-        checked = b;
-        map.values().stream().forEach(picker -> picker.setBackgroundColor(getResources().getColor(R.color.yellow, null)));
-        new URLTask(fullscreenActivity, checked).execute();
-      }
+    switcher.setOnCheckedChangeListener((compoundButton, b) -> {
+      checked = b;
+      map.values()
+         .forEach(picker -> picker.setBackgroundColor(getResources().getColor(R.color.yellow, null)));
+      new URLTask(fullscreenActivity, checked).execute();
     });
     switcher.setTextColor(getResources().getColor(R.color.yellow, null));
     switcher.setTextOff(getResources().getString(R.string.wed));
@@ -225,12 +217,12 @@ public class FullscreenActivity extends AppCompatActivity implements AsyncRespon
   }
 
   private void setupSeekBar() {
-    SeekBar seekBar = (SeekBar) findViewById(R.id.seekBar);
+    SeekBar seekBar = findViewById(R.id.seekBar);
     seekBar.setMax(9);
     seekBar.incrementProgressBy(1);
     seekBar.setProgress(0);
 
-    final TextView barNumber = (TextView) findViewById(R.id.barNumber);
+    final TextView barNumber = findViewById(R.id.barNumber);
     barNumber.setText(String.valueOf(seekBar.getProgress() + 1));
 
     seekBar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
@@ -265,7 +257,7 @@ public class FullscreenActivity extends AppCompatActivity implements AsyncRespon
   }
 
   private NumberPicker createPicker(int id, int number) {
-    NumberPicker np = (NumberPicker) findViewById(id);
+    NumberPicker np = findViewById(id);
     np.setTag(number);
     np.setMinValue(1);
     np.setMaxValue(49);
@@ -276,32 +268,29 @@ public class FullscreenActivity extends AppCompatActivity implements AsyncRespon
       np.setValue(val);
     }
 
-    np.setOnValueChangedListener(new NumberPicker.OnValueChangeListener() {
-      @Override
-      public void onValueChange(NumberPicker picker, int oldVal, int newVal) {
-        CharSequence block = ((TextView) findViewById(R.id.barNumber)).getText();
-        if (block != null) {
-          SharedPreferences.Editor editor = getPreferences(Context.MODE_PRIVATE).edit();
-          int tag = (int) picker.getTag();
-          editor.putInt(getString(R.string.pref_key) + block + tag, newVal);
-          editor.commit();
+    np.setOnValueChangedListener((picker, oldVal, newVal) -> {
+      CharSequence block1 = ((TextView) findViewById(R.id.barNumber)).getText();
+      if (block1 != null) {
+        SharedPreferences.Editor editor = getPreferences(Context.MODE_PRIVATE).edit();
+        int tag = (int) picker.getTag();
+        editor.putInt(getString(R.string.pref_key) + block1 + tag, newVal);
+        editor.apply();
 
-          //if (map.containsValue(picker)) {
-            picker.setBackgroundColor(getResources().getColor(R.color.yellow, null));
-          //}
-          //    if (string.isEmpty()) {
-          //    int i=0;
-          //  String numbers = StringUtils.EMPTY;
-          //for (NumberPicker numberPicker : numberPickers) {
-          //if (i == (int)picker.getTag()){
-          // numbers +=
-          //}
-          //}
-          //String numbers = Stream.of(numberPickers[Integer.valueOf(block.toString())])
+        //if (map.containsValue(picker)) {
+          picker.setBackgroundColor(getResources().getColor(R.color.yellow, null));
+        //}
+        //    if (string.isEmpty()) {
+        //    int i=0;
+        //  String numbers = StringUtils.EMPTY;
+        //for (NumberPicker numberPicker : numberPickers) {
+        //if (i == (int)picker.getTag()){
+        // numbers +=
+        //}
+        //}
+        //String numbers = Stream.of(numberPickers[Integer.valueOf(block.toString())])
 //                                   .map(NumberPicker::getValue)
-          //                                 .map(String::valueOf)
-          //                               .collect(Collectors.joining(","));
-        }
+        //                                 .map(String::valueOf)
+        //                               .collect(Collectors.joining(","));
       }
     });
 
@@ -325,12 +314,12 @@ public class FullscreenActivity extends AppCompatActivity implements AsyncRespon
   @Override
   public void processFinish() {
     if (!winNumbers.isEmpty()) {
-      setBallAndPicker((TextView) findViewById(R.id.number1), winNumbers.get(0));
-      setBallAndPicker((TextView) findViewById(R.id.number2), winNumbers.get(1));
-      setBallAndPicker((TextView) findViewById(R.id.number3), winNumbers.get(2));
-      setBallAndPicker((TextView) findViewById(R.id.number4), winNumbers.get(3));
-      setBallAndPicker((TextView) findViewById(R.id.number5), winNumbers.get(4));
-      setBallAndPicker((TextView) findViewById(R.id.number6), winNumbers.get(5));
+      setBallAndPicker(findViewById(R.id.number1), winNumbers.get(0));
+      setBallAndPicker(findViewById(R.id.number2), winNumbers.get(1));
+      setBallAndPicker(findViewById(R.id.number3), winNumbers.get(2));
+      setBallAndPicker(findViewById(R.id.number4), winNumbers.get(3));
+      setBallAndPicker(findViewById(R.id.number5), winNumbers.get(4));
+      setBallAndPicker(findViewById(R.id.number6), winNumbers.get(5));
     }
     ((TextView) findViewById(R.id.drawingDay)).setText(String.format("Ziehung vom %s", drawingDay));
 
@@ -414,11 +403,11 @@ public class FullscreenActivity extends AppCompatActivity implements AsyncRespon
 
   private class URLTask extends AsyncTask<Void, Void, Void> {
 
-    protected AsyncResponse delegate = null;
-    private boolean checked;
+    protected AsyncResponse delegate;
+    private final boolean checked;
     private int hits = 0;
 
-    public URLTask(FullscreenActivity fullscreenActivity, boolean checked) {
+    private URLTask(FullscreenActivity fullscreenActivity, boolean checked) {
       this.delegate = fullscreenActivity;
       this.checked = checked;
     }
@@ -436,14 +425,14 @@ public class FullscreenActivity extends AppCompatActivity implements AsyncRespon
 
       Context context = getApplicationContext();
       int duration = Toast.LENGTH_SHORT;
-      Toast toast = Toast.makeText(context, String.format("Sie haben %s richtige Zahlen", hits), duration);
+      Toast toast = Toast.makeText(context, String.format("Sie haben %s richtige Zahl%s", hits, hits == 1 ? StringUtils.EMPTY : "en"), duration);
       toast.show();
     }
 
     @Override
     protected Void doInBackground(Void... voids) {
 
-      URL urlObject = null;
+      URL urlObject;
       try {
         urlObject = new URL(getResources().getString(R.string.lottery_url));
         URLConnection urlConnection = urlObject.openConnection();
@@ -479,7 +468,7 @@ public class FullscreenActivity extends AppCompatActivity implements AsyncRespon
             if (i > 0 && i < 7) {
               Integer number = Integer.valueOf(numbers.get(i));
               Optional<NumberPicker> first = Stream.of(numberPickers)
-                                                   .filter(np -> number.intValue() == np.getValue())
+                                                   .filter(np -> number == np.getValue())
                                                    .findFirst();
               if (first.isPresent()) {
                 hits++;
@@ -501,10 +490,10 @@ public class FullscreenActivity extends AppCompatActivity implements AsyncRespon
       return buffer.lines()
                    .map(str -> {
                      int ind = str.indexOf(drawingDay);
-                     return ind > -1 ? str.substring(ind, str.length()) : null;
+                     return ind > -1 ? str.substring(ind) : null;
                    })
                    .filter(Objects::nonNull)
-                   .map(str -> Stream.of(str.split("LottoBall__circle\\\">"))
+                   .map(str -> Stream.of(str.split("LottoBall__circle\">"))
                                      .map(s -> s.substring(0, s.indexOf("<")))
                                      .collect(Collectors.toList()))
                    .flatMap(List::stream)
