@@ -184,7 +184,7 @@ public class FullscreenActivity extends AppCompatActivity implements AsyncRespon
   private AdView getAdView() {
     AdView mAdView = new AdView(this);
     mAdView.setAdSize(AdSize.SMART_BANNER);
-    mAdView.setAdUnitId("ca-app-pub-3940256099942544/6300978111");
+    mAdView.setAdUnitId("ca-app-pub-8058982377649219/6931836093");
     AdRequest adRequest = new AdRequest.Builder().build();
     mAdView.loadAd(adRequest);
     return mAdView;
@@ -420,12 +420,10 @@ public class FullscreenActivity extends AppCompatActivity implements AsyncRespon
     @Override
     protected void onPostExecute(Void aVoid) {
       super.onPostExecute(aVoid);
-
       delegate.processFinish();
 
-      Context context = getApplicationContext();
       int duration = Toast.LENGTH_SHORT;
-      Toast toast = Toast.makeText(context, String.format("Sie haben %s richtige Zahl%s", hits, hits == 1 ? StringUtils.EMPTY : "en"), duration);
+      Toast toast = Toast.makeText(getApplicationContext(), String.format("Sie haben %s richtige Zahl%s", hits, hits == 1 ? StringUtils.EMPTY : "en"), duration);
       toast.show();
     }
 
