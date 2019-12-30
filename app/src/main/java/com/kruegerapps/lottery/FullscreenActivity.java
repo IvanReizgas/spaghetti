@@ -206,6 +206,12 @@ public class FullscreenActivity extends AppCompatActivity implements AsyncRespon
     Switch switcher = findViewById(R.id.switcher);
     final FullscreenActivity fullscreenActivity = this;
     switcher.setOnCheckedChangeListener((compoundButton, b) -> {
+      ((TextView)findViewById(R.id.number1)).setText(StringUtils.EMPTY);
+      ((TextView)findViewById(R.id.number2)).setText(StringUtils.EMPTY);
+      ((TextView)findViewById(R.id.number3)).setText(StringUtils.EMPTY);
+      ((TextView)findViewById(R.id.number4)).setText(StringUtils.EMPTY);
+      ((TextView)findViewById(R.id.number5)).setText(StringUtils.EMPTY);
+      ((TextView)findViewById(R.id.number6)).setText(StringUtils.EMPTY);
       checked = b;
       map.values()
          .forEach(picker -> picker.setBackgroundColor(getResources().getColor(R.color.yellow, null)));
@@ -439,10 +445,10 @@ public class FullscreenActivity extends AppCompatActivity implements AsyncRespon
           List<String> numbers = Collections.emptyList();
           if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             LocalDate now = LocalDate.now();
-            if (now.getDayOfWeek()
-                   .equals(DayOfWeek.SATURDAY) || now.getDayOfWeek()
-                                                     .equals(DayOfWeek.SATURDAY)) {
-              numbers = getNumbers(buffer, now.getDayOfMonth(), now.getMonthValue(), now.getYear());
+            if (checked && now.getDayOfWeek()
+                   .equals(DayOfWeek.SATURDAY) || !checked && now.getDayOfWeek()
+                                                     .equals(DayOfWeek.WEDNESDAY)) {
+              numbers = getNumbers(new BufferedReader(new InputStreamReader(new URL(getResources().getString(R.string.lottery_url)).openConnection().getInputStream())), now.getDayOfMonth(), now.getMonthValue(), now.getYear());
             }
 
             if (numbers.isEmpty()) {
