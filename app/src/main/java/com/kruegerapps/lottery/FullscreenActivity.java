@@ -448,23 +448,32 @@ public class FullscreenActivity extends AppCompatActivity implements AsyncRespon
             if (checked && now.getDayOfWeek()
                    .equals(DayOfWeek.SATURDAY) || !checked && now.getDayOfWeek()
                                                      .equals(DayOfWeek.WEDNESDAY)) {
-              numbers = getNumbers(new BufferedReader(new InputStreamReader(new URL(getResources().getString(R.string.lottery_url)).openConnection().getInputStream())), now.getDayOfMonth(), now.getMonthValue(), now.getYear());
+              numbers = getNumbers(new BufferedReader(new InputStreamReader(new URL(getResources().getString(R.string.lottery_url)).openConnection().getInputStream())), String.format("%02d", now.getDayOfMonth()), String.format("%02d", now.getMonthValue()), now.getYear());
             }
 
             if (numbers.isEmpty()) {
               // not yet drawn today or not drawing day
               LocalDate then = now.with(TemporalAdjusters.previous(checked ? DayOfWeek.SATURDAY : DayOfWeek.WEDNESDAY));
-              numbers = getNumbers(buffer, then.getDayOfMonth(), then.getMonthValue(), then.getYear());
+              numbers = getNumbers(buffer, String.format("%02d", then.getDayOfMonth()), String.format("%02d", then.getMonthValue()), then.getYear());
             }
           } else {
             Calendar cal = Calendar.getInstance();
-            if (cal.get(Calendar.DAY_OF_WEEK) == Calendar.SATURDAY || cal.get(Calendar.DAY_OF_WEEK) == Calendar.WEDNESDAY) {
-              numbers = getNumbers(buffer, cal.get(Calendar.DAY_OF_MONTH), cal.get(Calendar.MONTH) + 1, cal.get(Calendar.YEAR));
+            int day = cal.get(Calendar.DAY_OF_WEEK);
+            if (day == Calendar.SATURDAY || day == Calendar.WEDNESDAY) {
+              numbers = getNumbers(buffer, String.format("%02d", cal.get(Calendar.DAY_OF_MONTH)), String.format("%02d", cal.get(Calendar.MONTH) + 1), cal.get(Calendar.YEAR));
             }
 
             if (numbers.isEmpty()) {
-              cal.add(Calendar.DAY_OF_WEEK, -(cal.get(Calendar.DAY_OF_WEEK)) - (checked ? 0 : 3));
-              numbers = getNumbers(buffer, cal.get(Calendar.DAY_OF_MONTH), cal.get(Calendar.MONTH) + 1, cal.get(Calendar.YEAR));
+              int amount = 0;
+              if (!checked) {
+                amount = day > Calendar.WEDNESDAY ? day - Calendar.WEDNESDAY : day + 3;
+              }
+              else {
+                amount = day;
+              }
+
+              cal.add(Calendar.DAY_OF_WEEK, -amount);
+              numbers = getNumbers(buffer, String.format("%02d", cal.get(Calendar.DAY_OF_MONTH)), String.format("%02d", cal.get(Calendar.MONTH) + 1), cal.get(Calendar.YEAR));
             }
           }
 
@@ -489,7 +498,7 @@ public class FullscreenActivity extends AppCompatActivity implements AsyncRespon
       return null;
     }
 
-    private List<String> getNumbers(BufferedReader buffer, int dayOfMonth, int monthValue, int year) {
+    private List<String> getNumbers(BufferedReader buffer, String dayOfMonth, String monthValue, int year) {
       drawingDay = String.format("%s.%s.%s", dayOfMonth, monthValue, year);
       return buffer.lines()
                    .map(str -> {
