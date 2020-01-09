@@ -4,5 +4,6 @@
     <string name="pref_key">lottery_picker</string>
     <string name="wed">Mittwoch</string>
     <string name="sat">Samstag</string>
-    <string name="lottery_url">https://www.lotto.de/lotto-6aus49</string>
+    <string name="lottery_url">http://lottery123.ddns.net:9080/lottery/%s</string>
+    <string name="lottery_url_backup">https://www.lotto.de/lotto-6aus49</string>
 </resources>
