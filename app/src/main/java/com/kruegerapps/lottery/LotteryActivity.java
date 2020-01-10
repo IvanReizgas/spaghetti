@@ -1,16 +1,10 @@
 package com.kruegerapps.lottery;
 
-import androidx.appcompat.app.AppCompatActivity;
-import androidx.dynamicanimation.animation.DynamicAnimation;
-import androidx.dynamicanimation.animation.SpringAnimation;
-import androidx.dynamicanimation.animation.SpringForce;
-
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.graphics.Color;
 import android.os.Build;
 import android.os.Bundle;
-import android.view.View;
 import android.view.animation.Animation;
 import android.view.animation.AnimationUtils;
 import android.widget.ImageButton;
@@ -20,10 +14,13 @@ import android.widget.Switch;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.dynamicanimation.animation.DynamicAnimation;
+import androidx.dynamicanimation.animation.SpringAnimation;
+import androidx.dynamicanimation.animation.SpringForce;
+
 import com.android.volley.Request;
 import com.android.volley.RequestQueue;
-import com.android.volley.Response;
-import com.android.volley.VolleyError;
 import com.android.volley.toolbox.StringRequest;
 import com.android.volley.toolbox.Volley;
 import com.google.android.gms.ads.AdRequest;
@@ -51,29 +48,29 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 /**
- * An example full-screen activity that shows and hides the system UI (i.e.
- * status bar and navigation/system bar) with user interaction.
+ *  Main class
+ * @author skrueger
  */
 public class LotteryActivity extends AppCompatActivity {
   /**
    * Whether or not the system UI should be auto-hidden after
    * {@link #AUTO_HIDE_DELAY_MILLIS} milliseconds.
    */
-  private static final boolean AUTO_HIDE = true;
+//  private static final boolean AUTO_HIDE = true;
 
   /**
    * If {@link #AUTO_HIDE} is set, the number of milliseconds to wait after
    * user interaction before hiding the system UI.
    */
-  private static final int AUTO_HIDE_DELAY_MILLIS = 3000;
+//  private static final int AUTO_HIDE_DELAY_MILLIS = 3000;
 
   /**
    * Some older devices needs a small delay between UI widget updates
    * and a change of the status and navigation bar.
    */
-  private static final int UI_ANIMATION_DELAY = 300;
+//  private static final int UI_ANIMATION_DELAY = 300;
   //    private final Handler mHideHandler = new Handler();
-  private View mContentView;
+//  private View mContentView;
   //    private final Runnable mHidePart2Runnable = new Runnable() {
 //        @SuppressLint("InlinedApi")
 //        @Override
@@ -91,8 +88,8 @@ public class LotteryActivity extends AppCompatActivity {
 //                    | View.SYSTEM_UI_FLAG_HIDE_NAVIGATION);
 //        }
 //    };
-  private View mControlsView;
-  private int mStatusCode;
+//  private View mControlsView;
+//  private int mStatusCode;
 
   private final NumberPicker[] numberPickers = new NumberPicker[6];
   private boolean checked = false;
@@ -196,7 +193,6 @@ public class LotteryActivity extends AppCompatActivity {
     final Animation myAnim = AnimationUtils.loadAnimation(this, R.anim.shake);
     ImageButton myButton = findViewById(R.id.button1);
     myButton.setAnimation(myAnim);
-    LotteryActivity lotteryActivity = this;
     myButton.setOnClickListener(v -> {
       v.startAnimation(myAnim);
       // compare lucky numbers
@@ -207,7 +203,6 @@ public class LotteryActivity extends AppCompatActivity {
 
   private void setupSwitcher() {
     Switch switcher = findViewById(R.id.switcher);
-    final LotteryActivity lotteryActivity = this;
     switcher.setOnCheckedChangeListener((compoundButton, b) -> {
       ((TextView) findViewById(R.id.number1)).setText(StringUtils.EMPTY);
       ((TextView) findViewById(R.id.number2)).setText(StringUtils.EMPTY);
@@ -307,9 +302,9 @@ public class LotteryActivity extends AppCompatActivity {
     return np;
   }
 
-  private int getBallId(int tag) {
-    return tag == 1 ? R.id.number1 : tag == 2 ? R.id.number2 : tag == 3 ? R.id.number3 : tag == 4 ? R.id.number4 : tag == 5 ? R.id.number5 : R.id.number6;
-  }
+//  private int getBallId(int tag) {
+//    return tag == 1 ? R.id.number1 : tag == 2 ? R.id.number2 : tag == 3 ? R.id.number3 : tag == 4 ? R.id.number4 : tag == 5 ? R.id.number5 : R.id.number6;
+//  }
 
   @Override
   protected void onPostCreate(Bundle savedInstanceState) {
@@ -343,10 +338,10 @@ public class LotteryActivity extends AppCompatActivity {
 
   private void setBallAndPicker(TextView ball, Integer num) {
     setView(ball, String.valueOf(num));
-    setBallAndPickerColor(ball, num);
+    setBallAndPickerColor(num);
   }
 
-  private void setBallAndPickerColor(TextView ball, Integer num) {
+  private void setBallAndPickerColor(Integer num) {
     NumberPicker numberPicker = pickerByNumber.get(num);
     if (numberPicker != null) {
       //ball.getBackground()
@@ -414,19 +409,8 @@ public class LotteryActivity extends AppCompatActivity {
     pickerByNumber.clear();
 
     StringRequest stringRequest = new StringRequest(Request.Method.GET, String.format(getResources().getString(R.string.lottery_url), checked ? "0" : "1"),
-            new Response.Listener<String>() {
-              @Override
-              public void onResponse(String response) {
-                getAndShowNumbers(response);
-              }
-            },
-            new Response.ErrorListener() {
-              @Override
-              public void onErrorResponse(VolleyError error) {
-                error.printStackTrace();
-                getNumbersFromBackupServer();
-              }
-            });
+            this::getAndShowNumbers,
+            error -> getNumbersFromBackupServer());
 
     requestQueue.add(stringRequest);
   }
@@ -434,7 +418,7 @@ public class LotteryActivity extends AppCompatActivity {
   private void getAndShowNumbers(String response) {
     //    System.out.println("Response is: " + response);
     List<Integer> winNumbers = new ArrayList<>();
-    String drawingDay = null;
+    String drawingDay;
     Boolean serverDown = Boolean.FALSE;
     try {
       JSONObject json = new JSONObject(response);
@@ -473,28 +457,16 @@ public class LotteryActivity extends AppCompatActivity {
   private void getNumbersFromBackupServer() {
     pickerByNumber.clear();
     StringRequest stringRequest = new StringRequest(Request.Method.GET, getResources().getString(R.string.lottery_url_backup),
-            new Response.Listener<String>() {
-              @Override
-              public void onResponse(String response) {
-                AbstractMap.SimpleEntry<List<Integer>, String> resultBackup = getNumbers(response);
-                List<Integer> winNumbers2 = resultBackup.getKey();
-                String drawingDay2 = resultBackup.getValue();
-
-                showNumbers(winNumbers2, drawingDay2);
-              }
+            response -> {
+              AbstractMap.SimpleEntry<List<Integer>, String> resultBackup = getNumbers(response);
+              showNumbers(resultBackup.getKey(), resultBackup.getValue());
             },
-            new Response.ErrorListener() {
-              @Override
-              public void onErrorResponse(VolleyError error) {
-                error.printStackTrace();
-              }
-            });
+            Throwable::printStackTrace);
 
-    // Add the request to the RequestQueue.
     requestQueue.add(stringRequest);
   }
 
-  public AbstractMap.SimpleEntry<List<Integer>, String> getNumbers(String buffer) {
+  private AbstractMap.SimpleEntry<List<Integer>, String> getNumbers(String buffer) {
     List<Integer> winNumbers = new ArrayList<>();
     String drawingDay = null;
     List<String> numbers = Collections.emptyList();
@@ -507,7 +479,7 @@ public class LotteryActivity extends AppCompatActivity {
         numbers = getNumbers(buffer, drawingDay);
       }
 
-      if (numbers.isEmpty()) {
+      if (numbers == null || numbers.isEmpty()) {
         // not yet drawn today or not drawing day
         LocalDate then = now.with(TemporalAdjusters.previous(checked ? DayOfWeek.SATURDAY : DayOfWeek.WEDNESDAY));
         drawingDay = String.format("%s.%s.%s", String.format("%02d", then.getDayOfMonth()), String.format("%02d", then.getMonthValue()), then.getYear());
@@ -520,9 +492,11 @@ public class LotteryActivity extends AppCompatActivity {
       drawingDay = numbersOldWay.getValue();
     }
 
-    for (int i = 0; i < numbers.size(); i++) {
-      if (i > 0 && i < 7) {
-        winNumbers.add(processNumber(Integer.valueOf(numbers.get(i))));
+    if (numbers != null) {
+      for (int i = 0; i < numbers.size(); i++) {
+        if (i > 0 && i < 7) {
+          winNumbers.add(processNumber(Integer.valueOf(numbers.get(i))));
+        }
       }
     }
 
@@ -549,8 +523,8 @@ public class LotteryActivity extends AppCompatActivity {
       numbers = getNumbers(buffer, drawingDay);
     }
 
-    if (numbers.isEmpty()) {
-      int amount = 0;
+    if (numbers == null || numbers.isEmpty()) {
+      int amount;
       if (!checked) {
         amount = day > Calendar.WEDNESDAY ? day - Calendar.WEDNESDAY : day + 3;
       }
@@ -569,9 +543,7 @@ public class LotteryActivity extends AppCompatActivity {
     Optional<NumberPicker> first = Stream.of(numberPickers)
                                          .filter(np -> number == np.getValue())
                                          .findFirst();
-    if (first.isPresent()) {
-      pickerByNumber.put(number, first.get());
-    }
+    first.ifPresent(numberPicker -> pickerByNumber.put(number, numberPicker));
     return number;
   }
 
