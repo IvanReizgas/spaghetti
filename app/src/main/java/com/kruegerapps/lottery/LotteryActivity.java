@@ -15,6 +15,9 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.dynamicanimation.animation.DynamicAnimation;
+import androidx.dynamicanimation.animation.SpringAnimation;
+import androidx.dynamicanimation.animation.SpringForce;
 
 import com.google.android.gms.ads.AdRequest;
 import com.google.android.gms.ads.AdSize;
@@ -344,6 +347,17 @@ public class LotteryActivity extends AppCompatActivity {
   private void setNumberAndPicker(TextView ball, Integer num) {
     ball.setText(String.valueOf(num));
     ball.clearAnimation();
+
+
+    SpringAnimation anim = new SpringAnimation(ball, DynamicAnimation.ROTATION_Y, 0);
+    anim.setStartValue(-35);
+    anim.setStartVelocity(2000);
+    anim.getSpring()
+        .setDampingRatio(SpringForce.DAMPING_RATIO_HIGH_BOUNCY);
+    anim.getSpring()
+        .setStiffness(SpringForce.STIFFNESS_LOW);
+    anim.start();
+
     setNumberAndPickerColor(num);
   }
 
@@ -359,14 +373,6 @@ public class LotteryActivity extends AppCompatActivity {
   private void startLoadingAnimation(TextView tv) {
     Animation anim = AnimationUtils.loadAnimation(getApplicationContext(),
             R.anim.rotate);
-    /*//SpringAnimation anim = new SpringAnimation(tv, DynamicAnimation.ROTATION_Y, 0);
-    anim.setStartValue(-35);
-    anim.setStartVelocity(2000);
-    anim.getSpring()
-        .setDampingRatio(SpringForce.DAMPING_RATIO_HIGH_BOUNCY);
-    anim.getSpring()
-        .setStiffness(SpringForce.STIFFNESS_LOW);
-    anim.start();*/
     anim.setRepeatCount(Animation.INFINITE);
     tv.startAnimation(anim);
     tv.setText(StringUtils.EMPTY);
