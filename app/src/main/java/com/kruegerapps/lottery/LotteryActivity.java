@@ -15,22 +15,16 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.dynamicanimation.animation.DynamicAnimation;
-import androidx.dynamicanimation.animation.SpringAnimation;
-import androidx.dynamicanimation.animation.SpringForce;
 
-import com.android.volley.Request;
-import com.android.volley.RequestQueue;
-import com.android.volley.toolbox.StringRequest;
-import com.android.volley.toolbox.Volley;
 import com.google.android.gms.ads.AdRequest;
 import com.google.android.gms.ads.AdSize;
 import com.google.android.gms.ads.AdView;
 import com.google.android.gms.ads.MobileAds;
+import com.google.gson.JsonObject;
+import com.koushikdutta.async.future.FutureCallback;
+import com.koushikdutta.ion.Ion;
 
 import org.apache.commons.lang3.StringUtils;
-import org.json.JSONArray;
-import org.json.JSONObject;
 
 import java.time.DayOfWeek;
 import java.time.LocalDate;
@@ -48,7 +42,8 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 /**
- *  Main class
+ * Main class
+ *
  * @author skrueger
  */
 public class LotteryActivity extends AppCompatActivity {
@@ -94,7 +89,7 @@ public class LotteryActivity extends AppCompatActivity {
   private final NumberPicker[] numberPickers = new NumberPicker[6];
   private boolean checked = false;
   private final Map<Integer, NumberPicker> pickerByNumber = new HashMap<>();
-  private RequestQueue requestQueue = null;
+  //private RequestQueue requestQueue = null;
 
 //    private final Runnable mShowPart2Runnable = new Runnable() {
 //        @Override
@@ -144,7 +139,6 @@ public class LotteryActivity extends AppCompatActivity {
     // set action & jiggling of button if pressed
     setupButton();
     // execute initially
-    requestQueue = Volley.newRequestQueue(this);
     requestURL();
 //        new URLTask(this, checked).execute();
 
@@ -196,9 +190,19 @@ public class LotteryActivity extends AppCompatActivity {
     myButton.setOnClickListener(v -> {
       v.startAnimation(myAnim);
       // compare lucky numbers
+      startLoadingAnimations();
       requestURL();
 //            new URLTask(lotteryActivity, checked).execute();
     });
+  }
+
+  private void startLoadingAnimations() {
+    startLoadingAnimation(findViewById(R.id.number1));
+    startLoadingAnimation(findViewById(R.id.number2));
+    startLoadingAnimation(findViewById(R.id.number3));
+    startLoadingAnimation(findViewById(R.id.number4));
+    startLoadingAnimation(findViewById(R.id.number5));
+    startLoadingAnimation(findViewById(R.id.number6));
   }
 
   private void setupSwitcher() {
@@ -213,6 +217,7 @@ public class LotteryActivity extends AppCompatActivity {
       checked = b;
       pickerByNumber.values()
                     .forEach(picker -> picker.setBackgroundColor(getResources().getColor(R.color.yellow, null)));
+      startLoadingAnimations();
       requestURL();
 //            new URLTask(lotteryActivity, checked).execute();
     });
@@ -316,14 +321,14 @@ public class LotteryActivity extends AppCompatActivity {
 //        delayedHide(100);
   }
 
-  private void processFinish(List<Integer> winNumbers, String drawingDay) {
+  private void updateGui(List<Integer> winNumbers, String drawingDay) {
     if (!winNumbers.isEmpty()) {
-      setBallAndPicker(findViewById(R.id.number1), winNumbers.get(0));
-      setBallAndPicker(findViewById(R.id.number2), winNumbers.get(1));
-      setBallAndPicker(findViewById(R.id.number3), winNumbers.get(2));
-      setBallAndPicker(findViewById(R.id.number4), winNumbers.get(3));
-      setBallAndPicker(findViewById(R.id.number5), winNumbers.get(4));
-      setBallAndPicker(findViewById(R.id.number6), winNumbers.get(5));
+      setNumberAndPicker(findViewById(R.id.number1), winNumbers.get(0));
+      setNumberAndPicker(findViewById(R.id.number2), winNumbers.get(1));
+      setNumberAndPicker(findViewById(R.id.number3), winNumbers.get(2));
+      setNumberAndPicker(findViewById(R.id.number4), winNumbers.get(3));
+      setNumberAndPicker(findViewById(R.id.number5), winNumbers.get(4));
+      setNumberAndPicker(findViewById(R.id.number6), winNumbers.get(5));
     }
     ((TextView) findViewById(R.id.drawingDay)).setText(String.format("Ziehung vom %s", drawingDay));
 
@@ -336,12 +341,13 @@ public class LotteryActivity extends AppCompatActivity {
     // });
   }
 
-  private void setBallAndPicker(TextView ball, Integer num) {
-    setView(ball, String.valueOf(num));
-    setBallAndPickerColor(num);
+  private void setNumberAndPicker(TextView ball, Integer num) {
+    ball.setText(String.valueOf(num));
+    ball.clearAnimation();
+    setNumberAndPickerColor(num);
   }
 
-  private void setBallAndPickerColor(Integer num) {
+  private void setNumberAndPickerColor(Integer num) {
     NumberPicker numberPicker = pickerByNumber.get(num);
     if (numberPicker != null) {
       //ball.getBackground()
@@ -350,16 +356,20 @@ public class LotteryActivity extends AppCompatActivity {
     }
   }
 
-  private void setView(TextView tv, String value) {
-    SpringAnimation anim = new SpringAnimation(tv, DynamicAnimation.ROTATION_Y, 0);
+  private void startLoadingAnimation(TextView tv) {
+    Animation anim = AnimationUtils.loadAnimation(getApplicationContext(),
+            R.anim.rotate);
+    /*//SpringAnimation anim = new SpringAnimation(tv, DynamicAnimation.ROTATION_Y, 0);
     anim.setStartValue(-35);
     anim.setStartVelocity(2000);
     anim.getSpring()
         .setDampingRatio(SpringForce.DAMPING_RATIO_HIGH_BOUNCY);
     anim.getSpring()
         .setStiffness(SpringForce.STIFFNESS_LOW);
-    anim.start();
-    tv.setText(value);
+    anim.start();*/
+    anim.setRepeatCount(Animation.INFINITE);
+    tv.startAnimation(anim);
+    tv.setText(StringUtils.EMPTY);
   }
 //
 //    private void toggle() {
@@ -407,45 +417,58 @@ public class LotteryActivity extends AppCompatActivity {
 
   private void requestURL() {
     pickerByNumber.clear();
-
-    StringRequest stringRequest = new StringRequest(Request.Method.GET, String.format(getResources().getString(R.string.lottery_url), checked ? "0" : "1"),
-            this::getAndShowNumbers,
-            error -> getNumbersFromBackupServer());
-
-    requestQueue.add(stringRequest);
+    //final long l = System.currentTimeMillis();
+    Ion.with(getApplicationContext())
+       .load(String.format(getResources().getString(R.string.lottery_url), checked ? "0" : "1"))
+       .asJsonObject()
+       .setCallback(new FutureCallback<JsonObject>() {
+         @Override
+         public void onCompleted(Exception e, JsonObject result) {
+           if (result != null) {
+             //System.out.println("XXX getNumbersFromBackupServer1: " + (System.currentTimeMillis() - l));
+             getAndShowNumbers(result);
+           }
+           else {
+             if (e != null) {
+               e.printStackTrace();
+             }
+             getAndShowNumbersFromBackupServer();
+           }
+         }
+       });
+    //System.out.println("XXX getAndShowNumbersFromBackupServer: " + (System.currentTimeMillis() - l));
   }
 
-  private void getAndShowNumbers(String response) {
-    //    System.out.println("Response is: " + response);
+  private void getAndShowNumbers(JsonObject json) {
     List<Integer> winNumbers = new ArrayList<>();
     String drawingDay;
-    Boolean serverDown = Boolean.FALSE;
+    Boolean error = Boolean.FALSE;
     try {
-      JSONObject json = new JSONObject(response);
-      drawingDay = json.getString("drawingDay");
-      JSONArray numbers = json.getJSONArray("numbers");
-      for (int i = 0; i < numbers.length(); i++) {
-        winNumbers.add(processNumber((Integer) numbers.get(i)));
-      }
+      json.get("numbers")
+          .getAsJsonArray()
+          .forEach(elem -> winNumbers.add(processNumber(elem.getAsInt())));
 
       if (winNumbers.size() == 6) {
-        showNumbers(winNumbers, drawingDay);
+        showNumbers(winNumbers, json.get("drawingDay")
+                                    .getAsString());
       }
       else {
-        serverDown = Boolean.TRUE;
+        error = Boolean.TRUE;
       }
     } catch (Exception e) {
-      serverDown = Boolean.TRUE;
+      error = Boolean.TRUE;
     }
 
-    if (serverDown) {
-      getNumbersFromBackupServer();
+    //long l = System.currentTimeMillis();
+    if (error) {
+      getAndShowNumbersFromBackupServer();
     }
+    //System.out.println("XXX getAndShowNumbersFromBackupServer: " + (System.currentTimeMillis() - l));
   }
 
   private void showNumbers(List<Integer> winNumbers, String drawingDay) {
     if (!winNumbers.isEmpty() && drawingDay != null) {
-      processFinish(winNumbers, drawingDay);
+      updateGui(winNumbers, drawingDay);
       int duration = Toast.LENGTH_SHORT;
       Toast toast = Toast.makeText(getApplicationContext(), String.format("Sie haben %s richtige Zahl%s", pickerByNumber.keySet()
                                                                                                                         .size(), pickerByNumber.keySet()
@@ -454,16 +477,26 @@ public class LotteryActivity extends AppCompatActivity {
     }
   }
 
-  private void getNumbersFromBackupServer() {
+  private void getAndShowNumbersFromBackupServer() {
+    //final long l = System.currentTimeMillis();
     pickerByNumber.clear();
-    StringRequest stringRequest = new StringRequest(Request.Method.GET, getResources().getString(R.string.lottery_url_backup),
-            response -> {
-              AbstractMap.SimpleEntry<List<Integer>, String> resultBackup = getNumbers(response);
-              showNumbers(resultBackup.getKey(), resultBackup.getValue());
-            },
-            Throwable::printStackTrace);
 
-    requestQueue.add(stringRequest);
+    Ion.with(getApplicationContext())
+       .load(getResources().getString(R.string.lottery_url_backup))
+       .asString()
+       .setCallback(new FutureCallback<String>() {
+         @Override
+         public void onCompleted(Exception e, String result) {
+           if (result != null && e == null) {
+             //System.out.println("XXX getNumbersFromBackupServer2: " + (System.currentTimeMillis() - l));
+             AbstractMap.SimpleEntry<List<Integer>, String> resultBackup = getNumbers(result);
+             showNumbers(resultBackup.getKey(), resultBackup.getValue());
+           }
+           else {
+             e.printStackTrace();
+           }
+         }
+       });
   }
 
   private AbstractMap.SimpleEntry<List<Integer>, String> getNumbers(String buffer) {
@@ -566,7 +599,7 @@ public class LotteryActivity extends AppCompatActivity {
 //        @Override
 //        protected void onPostExecute(Void aVoid) {
 //            super.onPostExecute(aVoid);
-//            delegate.processFinish(winNumbers, drawingDay);
+//            delegate.updateGui(winNumbers, drawingDay);
 //
 //            int duration = Toast.LENGTH_SHORT;
 //            Toast toast = Toast.makeText(getApplicationContext(), String.format("Sie haben %s richtige Zahl%s", pickerByNumber.keySet().size(), pickerByNumber.keySet().size() == 1 ? StringUtils.EMPTY : "en"), duration);
