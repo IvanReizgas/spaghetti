@@ -23,6 +23,8 @@ import com.google.android.gms.ads.AdRequest;
 import com.google.android.gms.ads.AdSize;
 import com.google.android.gms.ads.AdView;
 import com.google.android.gms.ads.MobileAds;
+import com.google.android.gms.ads.initialization.InitializationStatus;
+import com.google.android.gms.ads.initialization.OnInitializationCompleteListener;
 import com.google.gson.JsonObject;
 import com.koushikdutta.async.future.FutureCallback;
 import com.koushikdutta.ion.Ion;
@@ -172,14 +174,14 @@ public class LotteryActivity extends AppCompatActivity {
 
   private void setupAdvertise() {
     MobileAds.initialize(this, initializationStatus -> {
+      getSupportActionBar().setDisplayShowCustomEnabled(true);
+      getSupportActionBar().setCustomView(getAdView());
     });
-    getSupportActionBar().setDisplayShowCustomEnabled(true);
-    getSupportActionBar().setCustomView(getAdView());
   }
 
   private AdView getAdView() {
     AdView mAdView = new AdView(this);
-    mAdView.setAdSize(AdSize.SMART_BANNER);
+    mAdView.setAdSize(AdSize.BANNER);
     mAdView.setAdUnitId("ca-app-pub-8058982377649219/6931836093");
     AdRequest adRequest = new AdRequest.Builder().build();
     mAdView.loadAd(adRequest);
@@ -427,19 +429,16 @@ public class LotteryActivity extends AppCompatActivity {
     Ion.with(getApplicationContext())
        .load(String.format(getResources().getString(R.string.lottery_url), checked ? "0" : "1"))
        .asJsonObject()
-       .setCallback(new FutureCallback<JsonObject>() {
-         @Override
-         public void onCompleted(Exception e, JsonObject result) {
-           if (result != null) {
-             //System.out.println("XXX getNumbersFromBackupServer1: " + (System.currentTimeMillis() - l));
-             getAndShowNumbers(result);
+       .setCallback((e, result) -> {
+         if (result != null) {
+           //System.out.println("XXX getNumbersFromBackupServer1: " + (System.currentTimeMillis() - l));
+           getAndShowNumbers(result);
+         }
+         else {
+           if (e != null) {
+             e.printStackTrace();
            }
-           else {
-             if (e != null) {
-               e.printStackTrace();
-             }
-             getAndShowNumbersFromBackupServer();
-           }
+           getAndShowNumbersFromBackupServer();
          }
        });
     //System.out.println("XXX getAndShowNumbersFromBackupServer: " + (System.currentTimeMillis() - l));
@@ -490,17 +489,14 @@ public class LotteryActivity extends AppCompatActivity {
     Ion.with(getApplicationContext())
        .load(getResources().getString(R.string.lottery_url_backup))
        .asString()
-       .setCallback(new FutureCallback<String>() {
-         @Override
-         public void onCompleted(Exception e, String result) {
-           if (result != null && e == null) {
-             //System.out.println("XXX getNumbersFromBackupServer2: " + (System.currentTimeMillis() - l));
-             AbstractMap.SimpleEntry<List<Integer>, String> resultBackup = getNumbers(result);
-             showNumbers(resultBackup.getKey(), resultBackup.getValue());
-           }
-           else {
-             e.printStackTrace();
-           }
+       .setCallback((e, result) -> {
+         if (result != null && e == null) {
+           //System.out.println("XXX getNumbersFromBackupServer2: " + (System.currentTimeMillis() - l));
+           AbstractMap.SimpleEntry<List<Integer>, String> resultBackup = getNumbers(result);
+           showNumbers(resultBackup.getKey(), resultBackup.getValue());
+         }
+         else {
+           e.printStackTrace();
          }
        });
   }
